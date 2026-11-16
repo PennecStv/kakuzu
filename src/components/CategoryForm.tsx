@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { parseAmount, toInput } from '../lib/money';
 import { GLYPHS } from '../store/defaults';
-import { categoriesOf, useStore } from '../store/store';
+import { fallbackCategory, useStore } from '../store/store';
 import type { Category, Kind } from '../store/types';
 
 interface Props {
@@ -26,8 +26,7 @@ export function CategoryForm({ kind, editing, onDone }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
 
-  const siblings = categoriesOf(categories, kind).filter((c) => c.id !== editing?.id);
-  const fallback = siblings.at(-1);
+  const fallback = fallbackCategory(categories, kind, editing?.id);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();

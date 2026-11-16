@@ -50,7 +50,13 @@ export const useStore = create<State & Actions>()(
         return removed;
       },
 
-      restoreTransaction: (t) => set((s) => ({ transactions: [...s.transactions, t] })),
+      restoreTransaction: (t) =>
+        set((s) => {
+          // Its category may have been deleted since.
+          const exists = s.categories.some((c) => c.id === t.categoryId);
+          const categoryId = exists ? t.categoryId : fallbackCategory(s.categories, t.kind)?.id;
+          return categoryId ? { transactions: [...s.transactions, { ...t, categoryId }] } : {};
+        }),
 
       addCategory: (c) => set((s) => ({ categories: [...s.categories, { ...c, id: crypto.randomUUID() }] })),
 
@@ -80,4 +86,15 @@ export const useStore = create<State & Actions>()(
 
 export function categoriesOf(categories: Category[], kind: Kind): Category[] {
   return categories.filter((c) => c.kind === kind);
+}
+
+const CATCH_ALL: Record<Kind, string> = { expense: 'other-expense', income: 'other-income' };
+
+/**
+ * Where entries go when their category disappears: the "Autres" category of the
+ * same kind when it still exists, else the first one left. Undefined when none is left.
+ */
+export function fallbackCategory(categories: Category[], kind: Kind, excludeId?: string): Category | undefined {
+  const left = categoriesOf(categories, kind).filter((c) => c.id !== excludeId);
+  return left.find((c) => c.id === CATCH_ALL[kind]) ?? left[0];
 }
