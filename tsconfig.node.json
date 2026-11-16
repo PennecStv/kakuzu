@@ -11,7 +11,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   },
   "include": ["vite.config.ts", "pwa-assets.config.ts", "eslint.config.js"]
 }
