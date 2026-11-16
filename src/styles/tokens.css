@@ -1,0 +1,44 @@
+:root {
+  color-scheme: dark;
+
+  /* surfaces, darkest to lightest */
+  --bg: #070b14;
+  --surface: rgba(13, 19, 34, 0.86);
+  --surface-solid: #0d1322;
+  --surface-raised: #141c30;
+  --hairline: rgba(203, 214, 235, 0.1);
+  --hairline-strong: rgba(203, 214, 235, 0.2);
+
+  /* ink */
+  --ink: #e9ecf3;
+  --ink-2: #a9b2c6;
+  --ink-3: #8a93a8;
+
+  /* meaning, always paired with a sign or a word */
+  --income: #5cc28a;
+  --expense: #e9ecf3;
+  --danger: #e66767;
+
+  /* set per theme from THEMES[theme].accent */
+  --accent: #e8604a;
+  --accent-ink: #070b14;
+
+  /* categorical palette, validated against --surface-solid (dataviz skill, dark mode) */
+  --cat-0: #3987e5;
+  --cat-1: #d95926;
+  --cat-2: #199e70;
+  --cat-3: #c98500;
+  --cat-4: #d55181;
+  --cat-5: #008300;
+  --cat-6: #9085e9;
+  --cat-7: #e66767;
+  --cat-other: #5b6478;
+
+  --font: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --gutter: 16px;
+  --nav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
