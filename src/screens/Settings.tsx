@@ -1,5 +1,6 @@
 import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
 import { THEMES } from '../ascii/themes';
+import { ThemeIcon } from '../components/ThemeIcon';
 import { toCsv } from '../lib/csv';
 import { today } from '../lib/dates';
 import { useInstall } from '../pwa';
@@ -69,9 +70,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
               style={{ '--theme': t.accent } as CSSProperties}
               onClick={() => setSettings({ theme: t.id })}
             >
-              <span className="theme__kanji" aria-hidden="true">
-                {t.kanji}
-              </span>
+              <ThemeIcon theme={t.id} className="theme__icon" />
               <span className="theme__name">{t.name}</span>
               <span className="theme__reading">{t.reading}</span>
             </button>

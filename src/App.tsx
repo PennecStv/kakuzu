@@ -5,6 +5,7 @@ import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
+import { ThemeIcon } from './components/ThemeIcon';
 import { TransactionForm } from './components/TransactionForm';
 import { monthOf, today } from './lib/dates';
 import { Categories } from './screens/Categories';
@@ -75,11 +76,11 @@ export function App() {
           </h1>
           <button
             type="button"
-            className={`theme-chip${[...current.kanji].length > 1 ? ' is-wide' : ''}`}
+            className="theme-chip"
             onClick={() => setSettings({ theme: nextTheme })}
             aria-label={`Thème ${current.name}, passer à ${THEMES[nextTheme].name}`}
           >
-            {current.kanji}
+            <ThemeIcon theme={theme} />
           </button>
         </header>
 

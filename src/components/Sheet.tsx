@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { type ReactNode, useEffect, useId, useRef } from 'react';
 
 interface Props {
@@ -34,7 +35,7 @@ export function Sheet({ open, title, onClose, children }: Props) {
         <div className="sheet__head">
           <h2 id={titleId}>{title}</h2>
           <button type="button" className="icon-button" onClick={onClose} aria-label="Fermer">
-            ×
+            <X aria-hidden="true" />
           </button>
         </div>
         {open && children}

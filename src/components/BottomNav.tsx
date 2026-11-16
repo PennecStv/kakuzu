@@ -1,10 +1,12 @@
+import { ChartPie, type LucideIcon, Plus, ReceiptText, Settings, Shapes } from 'lucide-react';
+
 export type Tab = 'home' | 'history' | 'categories' | 'settings';
 
-const TABS: { id: Tab; glyph: string; label: string }[] = [
-  { id: 'home', glyph: '総', label: 'Accueil' },
-  { id: 'history', glyph: '録', label: 'Opérations' },
-  { id: 'categories', glyph: '類', label: 'Catégories' },
-  { id: 'settings', glyph: '設', label: 'Réglages' },
+const TABS: { id: Tab; Icon: LucideIcon; label: string }[] = [
+  { id: 'home', Icon: ChartPie, label: 'Accueil' },
+  { id: 'history', Icon: ReceiptText, label: 'Opérations' },
+  { id: 'categories', Icon: Shapes, label: 'Catégories' },
+  { id: 'settings', Icon: Settings, label: 'Réglages' },
 ];
 
 interface Props {
@@ -22,9 +24,7 @@ export function BottomNav({ tab, onChange, onAdd }: Props) {
       aria-current={t.id === tab ? 'page' : undefined}
       onClick={() => onChange(t.id)}
     >
-      <span className="nav__glyph" aria-hidden="true">
-        {t.glyph}
-      </span>
+      <t.Icon className="nav__icon" aria-hidden="true" />
       <span>{t.label}</span>
     </button>
   );
@@ -33,7 +33,7 @@ export function BottomNav({ tab, onChange, onAdd }: Props) {
     <nav className="nav" aria-label="Navigation principale">
       {TABS.slice(0, 2).map(item)}
       <button type="button" className="nav__add" onClick={onAdd} aria-label="Ajouter une opération">
-        +
+        <Plus aria-hidden="true" />
       </button>
       {TABS.slice(2).map(item)}
     </nav>

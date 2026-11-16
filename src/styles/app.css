@@ -42,6 +42,8 @@
 }
 
 .theme-chip {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
   padding: 0;
@@ -49,15 +51,12 @@
   border-radius: 50%;
   background: var(--surface);
   color: var(--accent);
-  font-size: 18px;
-  white-space: nowrap;
   transition: border-color 0.2s;
 }
 
-/* Two-kanji names (海月) shrink to fit the same circle. */
-.theme-chip.is-wide {
-  font-size: 14px;
-  letter-spacing: -0.04em;
+.theme-chip svg {
+  width: 22px;
+  height: 22px;
 }
 
 .theme-chip:active {
@@ -155,9 +154,12 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  font-size: 20px;
-  line-height: 1;
   color: var(--ink-2);
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ---------- balance ---------- */
@@ -652,9 +654,10 @@
   box-shadow: inset 0 0 0 1px var(--theme);
 }
 
-.theme__kanji {
-  font-size: 26px;
-  line-height: 1.2;
+.theme__icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
   color: var(--theme);
 }
 
@@ -903,7 +906,6 @@
 .sheet__head .icon-button {
   border: 0;
   background: none;
-  font-size: 26px;
 }
 
 @keyframes rise {
@@ -947,20 +949,22 @@
   color: var(--ink-3);
 }
 
-.nav__glyph {
-  font-size: 18px;
-  line-height: 1.1;
+.nav__icon {
+  width: 22px;
+  height: 22px;
 }
 
 .nav__item.is-on {
   color: var(--ink);
 }
 
-.nav__item.is-on .nav__glyph {
+.nav__item.is-on .nav__icon {
   color: var(--accent);
 }
 
 .nav__add {
+  display: grid;
+  place-items: center;
   width: 56px;
   height: 56px;
   margin: 0 6px;
@@ -969,9 +973,13 @@
   border-radius: 18px;
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: 30px;
-  line-height: 1;
   box-shadow: 0 0 0 6px var(--bg);
+}
+
+.nav__add svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2.5;
 }
 
 /* ---------- toast ---------- */
