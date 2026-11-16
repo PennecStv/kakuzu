@@ -12,8 +12,11 @@ function download(name: string, type: string, content: string) {
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
+  document.body.append(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  // Safari and Firefox read the URL after the click returns: revoke it later.
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 export function Settings({ notify }: { notify: (text: string) => void }) {
@@ -24,6 +27,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const install = useInstall();
   const file = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
 
   const exportJson = () => {
     const { categories, transactions } = useStore.getState();
@@ -42,9 +46,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
     e.target.value = '';
     if (!picked) return;
     try {
-      const backup = readBackup(await picked.text(), settings);
-      importBackup(backup);
-      notify(`${backup.transactions.length} opérations importées`);
+      setPending(readBackup(await picked.text(), settings));
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Import impossible.');
     }
@@ -115,9 +117,34 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
           <button type="button" className="button" onClick={exportCsv}>
             Exporter pour un tableur (CSV)
           </button>
-          <button type="button" className="button" onClick={() => file.current?.click()}>
-            Importer une sauvegarde
-          </button>
+          {pending ? (
+            <div className="confirm">
+              <p>
+                Remplacer toutes les données actuelles par cette sauvegarde ({pending.transactions.length} opérations,{' '}
+                {pending.categories.length} catégories) ?
+              </p>
+              <div className="form__actions">
+                <button type="button" className="button" onClick={() => setPending(null)}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="button button--danger"
+                  onClick={() => {
+                    importBackup(pending);
+                    notify(`${pending.transactions.length} opérations importées`);
+                    setPending(null);
+                  }}
+                >
+                  Remplacer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="button" onClick={() => file.current?.click()}>
+              Importer une sauvegarde
+            </button>
+          )}
           <input ref={file} type="file" accept="application/json,.json" hidden onChange={importJson} />
         </div>
       </section>
