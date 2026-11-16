@@ -7,6 +7,7 @@ import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
 import { ThemeIcon } from './components/ThemeIcon';
 import { TransactionForm } from './components/TransactionForm';
+import { Wordmark } from './components/Wordmark';
 import { monthOf, today } from './lib/dates';
 import { Categories } from './screens/Categories';
 import { History } from './screens/History';
@@ -15,8 +16,7 @@ import { Settings } from './screens/Settings';
 import { useStore } from './store/store';
 import type { Category, Kind, ThemeId, Transaction } from './store/types';
 
-const TITLES: Record<Tab, string> = {
-  home: 'Kakuzu',
+const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   history: 'Opérations',
   categories: 'Catégories',
   settings: 'Réglages',
@@ -66,14 +66,7 @@ export function App() {
 
       <div className="app">
         <header className="top">
-          <h1 className={tab === 'home' ? 'brand' : ''}>
-            {tab === 'home' && (
-              <span className="brand__mark" aria-hidden="true">
-                角
-              </span>
-            )}
-            {TITLES[tab]}
-          </h1>
+          <h1>{tab === 'home' ? <Wordmark /> : TITLES[tab]}</h1>
           <button
             type="button"
             className="theme-chip"
