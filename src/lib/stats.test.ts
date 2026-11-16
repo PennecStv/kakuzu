@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../store/types';
 import { toCsv } from './csv';
-import { expensesByCategory, foldSlices, groupByDay, inMonth, matchesQuery, totals } from './stats';
+import { expensesByCategory, foldSlices, groupByDay, inMonth, matchesQuery, sumByCategory, totals } from './stats';
 
 let seq = 0;
 function tx(partial: Partial<Transaction>): Transaction {
@@ -47,6 +47,13 @@ describe('expensesByCategory', () => {
 
   it('returns nothing without expenses', () => {
     expect(expensesByCategory([])).toEqual([]);
+  });
+});
+
+describe('sumByCategory', () => {
+  it('adds up every entry of a category', () => {
+    const sums = sumByCategory([tx({ categoryId: 'a', amount: 1 }), tx({ categoryId: 'a', amount: 2 }), tx({ categoryId: 'b', amount: 5 })]);
+    expect(Object.fromEntries(sums)).toEqual({ a: 3, b: 5 });
   });
 });
 

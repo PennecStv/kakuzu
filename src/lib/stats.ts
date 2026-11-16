@@ -28,12 +28,16 @@ export interface Slice {
   share: number;
 }
 
+/** Total per category id. */
+export function sumByCategory(transactions: Transaction[]): Map<string, number> {
+  const sums = new Map<string, number>();
+  for (const t of transactions) sums.set(t.categoryId, (sums.get(t.categoryId) ?? 0) + t.amount);
+  return sums;
+}
+
 /** Expense total per category, largest first. */
 export function expensesByCategory(transactions: Transaction[]): Slice[] {
-  const sums = new Map<string, number>();
-  for (const t of transactions) {
-    if (t.kind === 'expense') sums.set(t.categoryId, (sums.get(t.categoryId) ?? 0) + t.amount);
-  }
+  const sums = sumByCategory(transactions.filter((t) => t.kind === 'expense'));
   const total = [...sums.values()].reduce((a, b) => a + b, 0);
   return [...sums]
     .map(([id, amount]) => ({ id, amount, share: total ? amount / total : 0 }))

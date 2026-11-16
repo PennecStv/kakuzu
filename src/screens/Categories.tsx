@@ -3,7 +3,7 @@ import { Glyph } from '../components/Glyph';
 import { Segmented } from '../components/Segmented';
 import { type MonthKey, monthLabel } from '../lib/dates';
 import { formatMoney } from '../lib/money';
-import { inMonth } from '../lib/stats';
+import { inMonth, sumByCategory } from '../lib/stats';
 import { categoriesOf, useStore } from '../store/store';
 import type { Category, Kind } from '../store/types';
 
@@ -18,11 +18,7 @@ export function Categories({ month, onEdit }: Props) {
   const currency = useStore((s) => s.settings.currency);
   const [kind, setKind] = useState<Kind>('expense');
 
-  const spent = useMemo(() => {
-    const sums = new Map<string, number>();
-    for (const t of inMonth(transactions, month)) sums.set(t.categoryId, (sums.get(t.categoryId) ?? 0) + t.amount);
-    return sums;
-  }, [transactions, month]);
+  const spent = useMemo(() => sumByCategory(inMonth(transactions, month)), [transactions, month]);
 
   const list = categoriesOf(categories, kind);
 

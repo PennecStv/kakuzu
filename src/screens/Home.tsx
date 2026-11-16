@@ -25,12 +25,17 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const monthly = useMemo(() => inMonth(transactions, month), [transactions, month]);
-  const sum = totals(monthly);
-  const breakdown = expensesByCategory(monthly);
-  const slices = foldSlices(breakdown);
-  const recent = groupByDay(monthly)
-    .flatMap((g) => g.transactions)
-    .slice(0, 5);
+  const { sum, breakdown, slices, recent } = useMemo(() => {
+    const breakdown = expensesByCategory(monthly);
+    return {
+      sum: totals(monthly),
+      breakdown,
+      slices: foldSlices(breakdown),
+      recent: groupByDay(monthly)
+        .flatMap((g) => g.transactions)
+        .slice(0, 5),
+    };
+  }, [monthly]);
 
   const colorOf = (s: Slice) => (s.id ? `var(--cat-${byId.get(s.id)?.color ?? 'other'})` : 'var(--cat-other)');
   const labelOf = (s: Slice) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres');
