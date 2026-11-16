@@ -46,7 +46,7 @@ describe('readBackup', () => {
   });
 
   it('falls back on unknown settings', () => {
-    const backup = readBackup(JSON.stringify({ ...valid, settings: { theme: 'dragons' } }), fallback);
+    const backup = readBackup(JSON.stringify({ ...valid, settings: { theme: 'dragons', currency: 'euro' } }), fallback);
     expect(backup.settings).toEqual(fallback);
   });
 });

@@ -1,3 +1,4 @@
+import { CURRENCIES } from './defaults';
 import type { Category, Kind, Settings, ThemeId, Transaction } from './types';
 
 export interface Backup {
@@ -69,7 +70,8 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
   const s = isObject(data.settings) ? data.settings : {};
   const settings: Settings = {
     theme: THEMES.includes(s.theme as ThemeId) ? (s.theme as ThemeId) : fallback.theme,
-    currency: typeof s.currency === 'string' ? s.currency : fallback.currency,
+    // An unknown code would make every money format throw.
+    currency: CURRENCIES.includes(s.currency as string) ? (s.currency as string) : fallback.currency,
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
   };
   return { app: 'kakuzu', version: 1, categories, transactions, settings };
