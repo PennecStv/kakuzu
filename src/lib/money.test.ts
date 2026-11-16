@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, formatSigned, parseAmount, toInput } from './money';
+import { currencySymbol, formatMoney, formatSigned, parseAmount, toInput } from './money';
 
 // Intl uses narrow no-break spaces in fr-FR; normalise them to compare.
-const plain = (s: string) => s.replace(/[  ]/g, ' ');
+const plain = (s: string) => s.replace(/[\u00a0\u202f]/g, ' ');
 
 describe('parseAmount', () => {
   it('reads decimal commas and dots', () => {
@@ -43,6 +43,11 @@ describe('formatting', () => {
     expect(plain(formatSigned(-500, 'EUR'))).toBe('−5,00 €');
     expect(plain(formatSigned(500, 'EUR'))).toBe('+5,00 €');
     expect(plain(formatSigned(0, 'EUR'))).toBe('0,00 €');
+  });
+
+  it('gives the short symbol for input fields', () => {
+    expect(currencySymbol('EUR')).toBe('€');
+    expect(currencySymbol('USD')).toBe('$');
   });
 
   it('round-trips through the input format', () => {

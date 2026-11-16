@@ -19,6 +19,12 @@ export function formatMoney(minor: number, currency: string): string {
   return formatter(currency).format(minor / 10 ** currencyDigits(currency));
 }
 
+/** "€" for EUR, "$" for USD: what to print next to an amount field. */
+export function currencySymbol(currency: string): string {
+  const parts = new Intl.NumberFormat('fr-FR', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).formatToParts(0);
+  return parts.find((p) => p.type === 'currency')?.value ?? currency;
+}
+
 export function formatSigned(minor: number, currency: string): string {
   const text = formatMoney(Math.abs(minor), currency);
   if (minor > 0) return `+${text}`;
@@ -31,7 +37,7 @@ export function formatSigned(minor: number, currency: string): string {
  * Returns minor units, or null when the input is not a positive amount.
  */
 export function parseAmount(input: string, currency: string): number | null {
-  const cleaned = input.replace(/[\s  €$£¥]/g, '').replace(',', '.');
+  const cleaned = input.replace(/[\s\u00a0\u202f€$£¥]/g, '').replace(',', '.');
   if (!/^\d+(\.\d*)?$|^\.\d+$/.test(cleaned)) return null;
   const digits = currencyDigits(currency);
   const minor = Math.round(Number(cleaned) * 10 ** digits);

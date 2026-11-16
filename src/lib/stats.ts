@@ -40,6 +40,9 @@ export function expensesByCategory(transactions: Transaction[]): Slice[] {
     .sort((a, b) => b.amount - a.amount);
 }
 
+/** Stable key of a slice, "other" for the folded one. */
+export const sliceKey = (s: Slice) => s.id ?? 'other';
+
 /** Keeps the donut readable: past `max` slices the tail becomes one "Autres" slice. */
 export function foldSlices(slices: Slice[], max = 6): Slice[] {
   if (slices.length <= max) return slices;
