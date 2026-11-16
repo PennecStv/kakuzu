@@ -43,6 +43,7 @@ export function useInstall(): InstallState {
       },
     };
   }
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) return { kind: 'ios' };
+  const iPadOS = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent) || iPadOS) return { kind: 'ios' };
   return { kind: 'unavailable' };
 }
