@@ -44,7 +44,8 @@ src/
 ### Design
 
 - Dark only: near-black navy surfaces, the ASCII scene stays behind and dimmed so text keeps a 4.5:1 contrast.
-- Monospace everywhere (Geist Mono), kanji as category glyphs. No emoji in the UI.
+- Monospace everywhere (Geist Mono). The header title is the pixel wordmark (`components/Wordmark.tsx`).
+- Icons are Lucide line icons. Lucide has none of the theme animals, so `components/ThemeIcon.tsx` draws them on its 24 px grid with its 2 px stroke; a new icon follows the same grid. No kanji as icons, no emoji in the UI.
 - One accent color per animal theme, taken from `src/ascii/themes.ts`. Category colors come from the fixed categorical palette in `tokens.css` and follow the category, never its rank.
 - No gradients on text, no glow on everything, no purple-to-pink hero, no card-in-card-in-card. Hairline borders, flat fills, generous spacing.
 - Touch targets ≥ 44 px. Everything reachable with one thumb: primary actions at the bottom.

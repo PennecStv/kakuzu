@@ -1,6 +1,11 @@
 <div align="center">
 
-# 角 kakuzu
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.svg" />
+    <img src="docs/wordmark-light.svg" width="336" alt="Kakuzu" />
+  </picture>
+</h1>
 
 **Suivi de budget mobile, sans pub, avec un étang ASCII qui vit derrière les chiffres.**
 
@@ -37,7 +42,7 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 | ---------- | ------------------------------------------------------------------------------------------------------------- |
 | Accueil    | Solde du mois, revenus et dépenses, camembert des dépenses par catégorie, budgets restants, dernières opérations |
 | Opérations | Historique du mois groupé par jour, recherche par note ou catégorie, filtre dépenses / revenus                |
-| Catégories | Catégories de dépenses et de revenus, symbole kanji, couleur, budget mensuel                                  |
+| Catégories | Catégories de dépenses et de revenus, icône, couleur, budget mensuel                                          |
 | Réglages   | Thème animé, devise, export JSON et CSV, import, installation, remise à zéro                                  |
 
 - **Ajout en trois gestes** : le bouton `+` ouvre une feuille avec le pavé numérique déjà ouvert, on choisit la catégorie et on valide.
@@ -49,15 +54,15 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 
 Le fond est une scène ASCII animée, dessinée image par image sur un `<canvas>`. Toucher le fond agit sur la scène.
 
-| Thème       | Kanji | Au toucher                                                         |
-| ----------- | ----- | ------------------------------------------------------------------ |
-| Carpes koï  | 鯉    | Des granulés tombent, les koï viennent les manger                  |
-| Papillons   | 蝶    | Les papillons s'envolent, des pétales de sakura dérivent           |
-| Hérons      | 鷺    | Le héron avance dans l'eau et pique un poisson, sous la lune        |
-| Grenouilles | 蛙    | Les grenouilles sautent de nénuphar en nénuphar et chantent « ケロ » |
-| Méduses     | 海月  | Une onde repousse les méduses, la neige marine tombe               |
+| Thème       | En japonais | Au toucher                                                         |
+| ----------- | ----------- | ------------------------------------------------------------------ |
+| Carpes koï  | koi         | Des granulés tombent, les koï viennent les manger                  |
+| Papillons   | chō         | Les papillons s'envolent, des pétales de sakura dérivent           |
+| Hérons      | sagi        | Le héron avance dans l'eau et pique un poisson, sous la lune        |
+| Grenouilles | kaeru       | Les grenouilles sautent de nénuphar en nénuphar et chantent « ケロ » |
+| Méduses     | kurage      | Une onde repousse les méduses, la neige marine tombe               |
 
-Le kanji en haut à droite de l'écran fait défiler les thèmes. L'animation se coupe dans les réglages et respecte le réglage système « réduire les animations ».
+L'animal en haut à droite de l'écran fait défiler les thèmes. L'animation se coupe dans les réglages et respecte le réglage système « réduire les animations ».
 
 ## 四 · Lancer le projet
 
@@ -91,8 +96,9 @@ src/
 ```
 
 - **Montants en centimes entiers**, jamais en flottants : `12,50 €` est stocké `1250`.
-- **Moteur ASCII sans dépendance** : chaque image remplit une grille de caractères avec un tampon de profondeur, puis dessine les glyphes regroupés par couleur. Les animaux sont procéduraux (colonne vertébrale articulée pour les koï, tentacules en chaîne pour les méduses, ellipses battantes pour les papillons). Les traits choisissent leur glyphe (`- / | \`) selon leur direction. L'animation est limitée à 30 images par seconde et s'arrête quand l'onglet est caché.
+- **Moteur ASCII sans dépendance** : chaque image remplit une grille de caractères avec un tampon de profondeur, puis dessine les glyphes regroupés par couleur. Les animaux sont procéduraux (colonne vertébrale articulée pour les koï, tentacules en chaîne pour les méduses, ellipses battantes pour les papillons). Les traits choisissent leur glyphe (`- / | \`) selon leur direction. L'animation est limitée à 24 images par seconde et s'arrête quand l'onglet est caché.
 - **Palette des catégories validée** pour le daltonisme et le contraste sur le fond sombre. La couleur suit la catégorie, jamais son rang.
+- **Icônes** [Lucide](https://lucide.dev) pour les catégories et la navigation. Lucide n'a ni koï, ni papillon, ni héron, ni grenouille, ni méduse : ces cinq-là sont dessinés à la main sur sa grille de 24 px. Le titre est un logo en pixel art, dessiné comme un seul tracé SVG.
 - **PWA** via `vite-plugin-pwa` : précache complet, mise à jour automatique, icônes générées depuis `public/icon.svg`.
 
 ## 六 · Crédits
@@ -103,7 +109,7 @@ L'esthétique s'inspire de ces projets (licence MIT). Aucun code n'en est repris
 - [chuma-beep/ascii-things](https://github.com/chuma-beep/ascii-things) : les scènes vivantes en glyphes
 - [Naveen-io/ascii-animals-newtab](https://github.com/Naveen-io/ascii-animals-newtab) : les espèces animées
 
-Police [Geist Mono](https://vercel.com/font) (SIL OFL 1.1).
+Police [Geist Mono](https://vercel.com/font) (SIL OFL 1.1), icônes [Lucide](https://lucide.dev) (ISC).
 
 ## 七 · Licence
 
