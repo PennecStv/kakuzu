@@ -20,23 +20,38 @@ describe('parseAmount', () => {
     expect(parseAmount('19.99', 'EUR')).toBe(1999);
   });
 
+  it('rejects more decimals than the currency has', () => {
+    expect(parseAmount('1,005', 'EUR')).toBeNull();
+    expect(parseAmount('12,5', 'JPY')).toBeNull();
+  });
+
+  it('rejects absurd amounts', () => {
+    expect(parseAmount('99999999999999999999', 'EUR')).toBeNull();
+  });
+
   it('rejects zero, negatives and garbage', () => {
     expect(parseAmount('0', 'EUR')).toBeNull();
     expect(parseAmount('-4', 'EUR')).toBeNull();
     expect(parseAmount('abc', 'EUR')).toBeNull();
     expect(parseAmount('', 'EUR')).toBeNull();
     expect(parseAmount('1,2,3', 'EUR')).toBeNull();
+    expect(parseAmount('.', 'EUR')).toBeNull();
   });
 
-  it('uses the currency precision', () => {
-    expect(parseAmount('1500', 'JPY')).toBe(1500);
+  it('stores hundredths whatever the currency', () => {
+    expect(parseAmount('1500', 'JPY')).toBe(150000);
   });
 });
 
 describe('formatting', () => {
   it('formats minor units in French', () => {
     expect(plain(formatMoney(123456, 'EUR'))).toBe('1 234,56 €');
-    expect(plain(formatMoney(1500, 'JPY'))).toBe('1 500 JPY');
+    expect(plain(formatMoney(150000, 'JPY'))).toBe('1 500 JPY');
+  });
+
+  it('only changes the symbol when the currency changes', () => {
+    expect(plain(formatMoney(1250, 'EUR'))).toBe('12,50 €');
+    expect(plain(formatMoney(1250, 'USD'))).toBe('12,50 $US');
   });
 
   it('signs balances with a real minus', () => {

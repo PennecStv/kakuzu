@@ -15,7 +15,7 @@ npm test           # vitest, logic only
 ## Stack
 
 - Vite + React 19 + TypeScript (strict). No UI kit, no CSS framework: plain CSS with custom properties in `src/styles/`.
-- State: one zustand store persisted to `localStorage` (`src/store/`). Amounts are integer cents, dates are `YYYY-MM-DD` strings. Never store floats for money.
+- State: one zustand store persisted to `localStorage` (`src/store/`). Amounts are integer hundredths whatever the currency (`SCALE` in `src/lib/money.ts`), so switching currency never rescales them. Dates are `YYYY-MM-DD` strings. Never store floats for money.
 - PWA through `vite-plugin-pwa` (auto update, offline precache).
 - Background: a hand-written ASCII renderer on a single `<canvas>` (`src/ascii/`). No dependency.
 

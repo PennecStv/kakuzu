@@ -1,5 +1,5 @@
 import type { Category, Transaction } from '../store/types';
-import { currencyDigits } from './money';
+import { SCALE, currencyDigits } from './money';
 
 function cell(value: string): string {
   return /[";\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
@@ -12,7 +12,7 @@ export function toCsv(transactions: Transaction[], categories: Category[], curre
   const rows = [...transactions]
     .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt)
     .map((t) => {
-      const signed = (t.kind === 'income' ? t.amount : -t.amount) / 10 ** digits;
+      const signed = (t.kind === 'income' ? t.amount : -t.amount) / SCALE;
       return [
         t.date,
         t.kind === 'income' ? 'Revenu' : 'Dépense',
