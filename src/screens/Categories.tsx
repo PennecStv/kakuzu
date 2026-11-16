@@ -37,9 +37,9 @@ export function Categories({ month, onEdit }: Props) {
           { value: 'income', label: 'Revenus' },
         ]}
       />
-      <p className="hint">Montants de {monthLabel(month)}. Touchez une catégorie pour la modifier ou lui fixer un budget.</p>
-
-      <ul className="card cat-list">
+      <section className="card cat-card" aria-label={`Catégories, montants de ${monthLabel(month)}`}>
+        <p className="hint">Montants de {monthLabel(month)}. Touchez une catégorie pour la modifier ou lui fixer un budget.</p>
+        <ul className="cat-list">
         {list.map((c) => {
           const amount = spent.get(c.id) ?? 0;
           return (
@@ -52,23 +52,24 @@ export function Categories({ month, onEdit }: Props) {
               >
                 <Glyph category={c} />
                 <span className="cat__name">{c.name}</span>
-                <span className="cat__amount">
-                  {formatMoney(amount, currency)}
-                  {c.budget !== undefined && <span className="cat__budget"> / {formatMoney(c.budget, currency)}</span>}
-                </span>
+                <span className="cat__amount">{formatMoney(amount, currency)}</span>
                 {c.budget !== undefined && (
-                  <span className="budget__bar">
-                    <span
-                      className={amount > c.budget ? 'is-over' : ''}
-                      style={{ width: `${Math.min(100, (amount / c.budget) * 100)}%` }}
-                    />
+                  <span className="budget">
+                    <span className="budget__bar">
+                      <span
+                        className={amount > c.budget ? 'is-over' : ''}
+                        style={{ width: `${Math.min(100, (amount / c.budget) * 100)}%` }}
+                      />
+                    </span>
+                    <span className="budget__text">sur {formatMoney(c.budget, currency)}</span>
                   </span>
                 )}
               </button>
             </li>
           );
         })}
-      </ul>
+        </ul>
+      </section>
 
       <button type="button" className="button button--wide" onClick={() => onEdit(kind)}>
         Nouvelle catégorie

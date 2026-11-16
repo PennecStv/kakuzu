@@ -247,7 +247,7 @@
 
 .split__row {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   column-gap: 10px;
   width: 100%;
@@ -454,15 +454,19 @@
 
 /* ---------- categories ---------- */
 
+.cat-card {
+  padding-bottom: 8px;
+}
+
 .cat-list {
-  margin: 0;
-  padding: 6px 8px;
+  margin: 0 -8px;
+  padding: 0;
   list-style: none;
 }
 
 .cat {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 12px;
   width: 100%;
@@ -474,18 +478,15 @@
   text-align: left;
 }
 
-.cat .budget__bar {
-  grid-column: 2 / -1;
-  margin-top: 6px;
-}
-
 .cat__amount {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.cat__budget {
-  color: var(--ink-3);
+.cat__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- controls ---------- */
