@@ -44,12 +44,20 @@
 .theme-chip {
   width: 44px;
   height: 44px;
+  padding: 0;
   border: 1px solid var(--hairline-strong);
   border-radius: 50%;
   background: var(--surface);
   color: var(--accent);
   font-size: 18px;
+  white-space: nowrap;
   transition: border-color 0.2s;
+}
+
+/* Two-kanji names (海月) shrink to fit the same circle. */
+.theme-chip.is-wide {
+  font-size: 14px;
+  letter-spacing: -0.04em;
 }
 
 .theme-chip:active {

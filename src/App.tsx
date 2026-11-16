@@ -75,7 +75,7 @@ export function App() {
           </h1>
           <button
             type="button"
-            className="theme-chip"
+            className={`theme-chip${[...current.kanji].length > 1 ? ' is-wide' : ''}`}
             onClick={() => setSettings({ theme: nextTheme })}
             aria-label={`Thème ${current.name}, passer à ${THEMES[nextTheme].name}`}
           >
