@@ -1,0 +1,44 @@
+import { type ReactNode, useEffect, useId, useRef } from 'react';
+
+interface Props {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}
+
+/** Bottom sheet on a native modal <dialog>: focus trap, Escape and inert page come for free. */
+export function Sheet({ open, title, onClose, children }: Props) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  return (
+    <dialog
+      ref={ref}
+      className="sheet"
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onClick={(e) => {
+        // A click on the dialog box itself, outside the panel, is a click on the backdrop.
+        if (e.target === ref.current) onClose();
+      }}
+    >
+      <div className="sheet__panel">
+        <div className="sheet__head">
+          <h2 id={titleId}>{title}</h2>
+          <button type="button" className="icon-button" onClick={onClose} aria-label="Fermer">
+            ×
+          </button>
+        </div>
+        {open && children}
+      </div>
+    </dialog>
+  );
+}
