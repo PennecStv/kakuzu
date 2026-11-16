@@ -84,7 +84,7 @@ describe('groupByDay', () => {
 });
 
 describe('matchesQuery', () => {
-  const category = { id: 'food', kind: 'expense' as const, name: 'Alimentation', glyph: '食', color: 1 };
+  const category = { id: 'food', kind: 'expense' as const, name: 'Alimentation', icon: 'basket' as const, color: 1 };
 
   it('searches the note and the category name, case-insensitive', () => {
     expect(matchesQuery(tx({ note: 'Boulangerie' }), category, 'boul')).toBe(true);
@@ -98,7 +98,7 @@ describe('toCsv', () => {
   it('writes French-friendly rows and escapes separators', () => {
     const csv = toCsv(
       [tx({ amount: 1250, note: 'Pain; beurre', date: '2026-11-03' })],
-      [{ id: 'food', kind: 'expense', name: 'Alimentation', glyph: '食', color: 1 }],
+      [{ id: 'food', kind: 'expense', name: 'Alimentation', icon: 'basket' as const, color: 1 }],
       'EUR',
     );
     expect(csv.split('\n')).toEqual([

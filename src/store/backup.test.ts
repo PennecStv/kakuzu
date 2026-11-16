@@ -6,8 +6,8 @@ const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true };
 
 const valid = {
   app: 'kakuzu',
-  version: 1,
-  categories: [{ id: 'food', kind: 'expense', name: 'Alimentation', glyph: '食', color: 1, budget: 30000 }],
+  version: 2,
+  categories: [{ id: 'food', kind: 'expense', name: 'Alimentation', icon: 'basket', color: 1, budget: 30000 }],
   transactions: [
     { id: 'a', kind: 'expense', amount: 1250, categoryId: 'food', date: '2026-11-03', note: 'Pain', createdAt: 1 },
   ],
@@ -20,6 +20,11 @@ describe('readBackup', () => {
     expect(backup.categories).toHaveLength(1);
     expect(backup.transactions).toHaveLength(1);
     expect(backup.settings).toEqual(valid.settings);
+  });
+
+  it('reads the kanji of version 1 files as icons', () => {
+    const v1 = { ...valid, version: 1, categories: [{ ...valid.categories[0], icon: undefined, glyph: '食' }] };
+    expect(readBackup(JSON.stringify(v1), fallback).categories[0]?.icon).toBe('basket');
   });
 
   it('rejects files from elsewhere', () => {

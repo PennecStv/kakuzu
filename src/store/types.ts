@@ -1,4 +1,5 @@
 import type { DayKey } from '../lib/dates';
+import type { IconId } from './icons';
 
 export type Kind = 'expense' | 'income';
 
@@ -8,8 +9,7 @@ export interface Category {
   id: string;
   kind: Kind;
   name: string;
-  /** One kanji (or any single character) shown as the category icon. */
-  glyph: string;
+  icon: IconId;
   /** Slot in the categorical palette, 0 to 7. */
   color: number;
   /** Monthly limit in minor units, expenses only. */

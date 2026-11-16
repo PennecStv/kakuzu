@@ -1,9 +1,10 @@
 import { CURRENCIES } from './defaults';
+import { iconFromKanji, isIconId } from './icons';
 import type { Category, Kind, Settings, ThemeId, Transaction } from './types';
 
 export interface Backup {
   app: 'kakuzu';
-  version: 1;
+  version: 2;
   exportedAt: string;
   categories: Category[];
   transactions: Transaction[];
@@ -19,14 +20,15 @@ const isMinor = (v: unknown): v is number => Number.isInteger(v) && (v as number
 
 function readCategory(v: unknown): Category | null {
   if (!isObject(v)) return null;
-  const { id, kind, name, glyph, color, budget } = v;
-  if (typeof id !== 'string' || typeof name !== 'string' || typeof glyph !== 'string') return null;
+  const { id, kind, name, icon, glyph, color, budget } = v;
+  if (typeof id !== 'string' || typeof name !== 'string') return null;
   if (!KINDS.includes(kind as Kind) || !Number.isInteger(color)) return null;
   return {
     id,
     kind: kind as Kind,
     name,
-    glyph,
+    // Version 1 files carry a kanji instead.
+    icon: isIconId(icon) ? icon : iconFromKanji(typeof glyph === 'string' ? glyph : ''),
     color: Math.abs(color as number) % 8,
     ...(isMinor(budget) ? { budget } : {}),
   };
@@ -74,5 +76,5 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     currency: CURRENCIES.includes(s.currency as string) ? (s.currency as string) : fallback.currency,
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
   };
-  return { app: 'kakuzu', version: 1, categories, transactions, settings };
+  return { app: 'kakuzu', version: 2, categories, transactions, settings };
 }

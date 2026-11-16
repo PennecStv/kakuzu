@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { parseAmount, toInput } from '../lib/money';
-import { GLYPHS } from '../store/defaults';
+import { IconPicker } from './CategoryIcon';
+import type { IconId } from '../store/icons';
 import { fallbackCategory, useStore } from '../store/store';
 import type { Category, Kind } from '../store/types';
 
@@ -20,7 +21,7 @@ export function CategoryForm({ kind, editing, onDone }: Props) {
   const deleteCategory = useStore((s) => s.deleteCategory);
 
   const [name, setName] = useState(editing?.name ?? '');
-  const [glyph, setGlyph] = useState(editing?.glyph ?? GLYPHS[0]);
+  const [icon, setIcon] = useState<IconId>(editing?.icon ?? 'tag');
   const [color, setColor] = useState(editing?.color ?? 0);
   const [budget, setBudget] = useState(editing?.budget ? toInput(editing.budget, currency) : '');
   const [confirming, setConfirming] = useState(false);
@@ -39,7 +40,7 @@ export function CategoryForm({ kind, editing, onDone }: Props) {
       setError('Budget invalide.');
       return;
     }
-    const data = { name: name.trim(), glyph: [...glyph][0] ?? '?', color, budget: limit ?? undefined };
+    const data = { name: name.trim(), icon, color, budget: limit ?? undefined };
     if (editing) updateCategory(editing.id, data);
     else addCategory({ ...data, kind });
     onDone(editing ? 'Catégorie modifiée' : 'Catégorie créée');
@@ -61,27 +62,8 @@ export function CategoryForm({ kind, editing, onDone }: Props) {
       </label>
 
       <fieldset className="field">
-        <legend>Symbole</legend>
-        <div className="glyphs">
-          {GLYPHS.map((g) => (
-            <button
-              key={g}
-              type="button"
-              className={g === glyph ? 'is-on' : ''}
-              aria-pressed={g === glyph}
-              onClick={() => setGlyph(g)}
-            >
-              {g}
-            </button>
-          ))}
-          <input
-            className="glyphs__custom"
-            aria-label="Autre symbole"
-            placeholder="…"
-            value={GLYPHS.includes(glyph) ? '' : glyph}
-            onChange={(e) => e.target.value && setGlyph([...e.target.value].at(-1) ?? glyph)}
-          />
-        </div>
+        <legend>Icône</legend>
+        <IconPicker value={icon} onChange={setIcon} />
       </fieldset>
 
       <fieldset className="field">

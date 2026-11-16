@@ -1,6 +1,6 @@
 import { formatMoney } from '../lib/money';
 import type { Category, Transaction } from '../store/types';
-import { Glyph } from './Glyph';
+import { CategoryIcon } from './CategoryIcon';
 
 interface Props {
   transaction: Transaction;
@@ -14,7 +14,7 @@ export function TransactionRow({ transaction: t, category, currency, onOpen }: P
   return (
     <li>
       <button type="button" className="tx" onClick={() => onOpen(t)}>
-        <Glyph category={category} />
+        <CategoryIcon category={category} />
         <span className="tx__text">
           <span className="tx__title">{t.note || category?.name || 'Sans catégorie'}</span>
           {t.note && category && <span className="tx__sub">{category.name}</span>}

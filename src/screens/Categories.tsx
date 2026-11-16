@@ -1,5 +1,5 @@
 import { type CSSProperties, useMemo, useState } from 'react';
-import { Glyph } from '../components/Glyph';
+import { CategoryIcon } from '../components/CategoryIcon';
 import { Segmented } from '../components/Segmented';
 import { type MonthKey, monthLabel } from '../lib/dates';
 import { formatMoney } from '../lib/money';
@@ -46,7 +46,7 @@ export function Categories({ month, onEdit }: Props) {
                 style={{ '--tile': `var(--cat-${c.color})` } as CSSProperties}
                 onClick={() => onEdit(kind, c)}
               >
-                <Glyph category={c} />
+                <CategoryIcon category={c} />
                 <span className="cat__name">{c.name}</span>
                 <span className="cat__amount">{formatMoney(amount, currency)}</span>
                 {c.budget !== undefined && (

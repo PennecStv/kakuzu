@@ -31,7 +31,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
 
   const exportJson = () => {
     const { categories, transactions } = useStore.getState();
-    const backup: Backup = { app: 'kakuzu', version: 1, exportedAt: new Date().toISOString(), categories, transactions, settings };
+    const backup: Backup = { app: 'kakuzu', version: 2, exportedAt: new Date().toISOString(), categories, transactions, settings };
     download(`kakuzu-${today()}.json`, 'application/json', JSON.stringify(backup, null, 2));
   };
 

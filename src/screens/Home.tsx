@@ -1,6 +1,6 @@
 import { type CSSProperties, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
-import { Glyph } from '../components/Glyph';
+import { CategoryIcon } from '../components/CategoryIcon';
 import { MonthSwitcher } from '../components/MonthSwitcher';
 import { TransactionRow } from '../components/TransactionRow';
 import { type MonthKey, monthLabel } from '../lib/dates';
@@ -104,7 +104,7 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
                       aria-pressed={active === key}
                       onClick={() => setActive(active === key ? null : key)}
                     >
-                      <Glyph category={category} />
+                      <CategoryIcon category={category} />
                       <span className="split__name">{labelOf(s)}</span>
                       <span className="split__share">{Math.round(s.share * 100)} %</span>
                       <span className="split__amount">{money(s.amount)}</span>

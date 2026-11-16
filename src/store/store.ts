@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Backup } from './backup';
 import { DEFAULT_CATEGORIES } from './defaults';
+import { migrate } from './migrations';
 import type { Category, Kind, Settings, Transaction } from './types';
 
 export interface State {
@@ -77,7 +78,8 @@ export const useStore = create<State & Actions>()(
     }),
     {
       name: 'kakuzu',
-      version: 1,
+      version: 2,
+      migrate,
       storage: createJSONStorage(() => localStorage),
       partialize: ({ categories, transactions, settings }) => ({ categories, transactions, settings }),
     },

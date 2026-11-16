@@ -3,7 +3,7 @@ import { today } from '../lib/dates';
 import { currencySymbol, parseAmount, toInput } from '../lib/money';
 import { categoriesOf, useStore } from '../store/store';
 import type { Kind, Transaction } from '../store/types';
-import { Glyph } from './Glyph';
+import { CategoryIcon } from './CategoryIcon';
 import { Segmented } from './Segmented';
 
 interface Props {
@@ -93,7 +93,7 @@ export function TransactionForm({ editing, onSaved, onDelete }: Props) {
               aria-pressed={c.id === selected?.id}
               onClick={() => setCategoryId(c.id)}
             >
-              <Glyph category={c} />
+              <CategoryIcon category={c} />
               <span>{c.name}</span>
             </button>
           ))}

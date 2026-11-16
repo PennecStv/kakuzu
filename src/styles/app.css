@@ -322,27 +322,24 @@
   white-space: nowrap;
 }
 
-/* ---------- glyph tiles ---------- */
+/* ---------- category icons ---------- */
 
-.glyph {
+.cat-icon {
   display: grid;
   place-items: center;
   flex: none;
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  /* A soft wash of the category color, with the kanji in the full color. */
+  /* A soft wash of the category color, with the icon in the full color. */
   background: color-mix(in srgb, var(--tile) 22%, transparent);
   border: 1px solid color-mix(in srgb, var(--tile) 45%, transparent);
   color: color-mix(in srgb, var(--tile) 70%, white);
-  font-size: 17px;
-  line-height: 1;
 }
 
-.glyph--lg {
-  width: 48px;
-  height: 48px;
-  font-size: 22px;
+.cat-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ---------- transactions ---------- */
@@ -808,29 +805,29 @@
   color: var(--ink);
 }
 
-.glyphs {
+.icon-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
   gap: 6px;
 }
 
-.glyphs button,
-.glyphs__custom {
+.icon-picker button {
+  display: grid;
+  place-items: center;
   height: 44px;
+  padding: 0;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   background: var(--surface-raised);
-  font-size: 18px;
-  text-align: center;
+  color: var(--ink-2);
 }
 
-.glyphs__custom {
-  width: 100%;
-  min-width: 0;
-  padding: 0;
+.icon-picker svg {
+  width: 20px;
+  height: 20px;
 }
 
-.glyphs button.is-on {
+.icon-picker button.is-on {
   border-color: var(--accent);
   color: var(--accent);
 }
