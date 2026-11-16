@@ -38,7 +38,7 @@ interface Ripple {
   size: number;
 }
 
-const FRAME_MS = 1000 / 30;
+const FRAME_MS = 1000 / 24;
 const FONT = '"Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace';
 /** Taps on these never reach the scene. */
 const INTERACTIVE = 'button, a, input, select, textarea, label, dialog, [data-no-poke]';
@@ -49,7 +49,7 @@ function toRgba(hex: string, alpha: number): string {
 }
 
 /**
- * Runs one scene on one canvas: sizing, the frame loop (capped at 30 fps to
+ * Runs one scene on one canvas: sizing, the frame loop (capped at 24 fps to
  * spare batteries), pointer input, shared ripples and the final glyph pass.
  */
 export class AsciiEngine {
