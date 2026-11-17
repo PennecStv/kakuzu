@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
@@ -8,6 +8,8 @@ import { Toast, type ToastMessage } from './components/Toast';
 import { TransactionForm } from './components/TransactionForm';
 import { Wordmark } from './components/Wordmark';
 import { monthOf, today } from './lib/dates';
+import { formatMoney } from './lib/money';
+import { pickQuip } from './lib/quips';
 import { Categories } from './screens/Categories';
 import { History } from './screens/History';
 import { Home } from './screens/Home';
@@ -24,6 +26,7 @@ const TITLES: Record<Exclude<Tab, 'home'>, string> = {
 export function App() {
   const theme = useStore((s) => s.settings.theme);
   const motion = useStore((s) => s.settings.motion);
+  const currency = useStore((s) => s.settings.currency);
   const deleteTransaction = useStore((s) => s.deleteTransaction);
   const restoreTransaction = useStore((s) => s.restoreTransaction);
 
@@ -32,6 +35,7 @@ export function App() {
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  const lastQuip = useRef<string>(undefined);
 
   const notify = useCallback((text: string, action?: ToastMessage['action']) => setToast({ id: Date.now(), text, action }), []);
   const clearToast = useCallback(() => setToast(null), []);
@@ -90,7 +94,13 @@ export function App() {
           editing={txSheet?.editing}
           onDelete={removeTransaction}
           onSaved={(t) => {
-            notify(txSheet?.editing ? 'Opération modifiée' : 'Opération ajoutée');
+            if (txSheet?.editing) notify('Opération modifiée');
+            else {
+              const quip = pickQuip(t.kind, lastQuip.current);
+              lastQuip.current = quip;
+              const sign = t.kind === 'income' ? '+' : '−';
+              setToast({ id: Date.now(), text: quip, figure: `${sign}${formatMoney(t.amount, currency)}`, tone: t.kind });
+            }
             setTxSheet(null);
             setMonth(monthOf(t.date));
           }}

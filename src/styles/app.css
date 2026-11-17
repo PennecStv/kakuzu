@@ -1086,8 +1086,49 @@
   animation: rise 0.2s ease-out;
 }
 
-.toast span {
+.toast__text {
   flex: 1;
+  padding: 10px 0;
+  white-space: pre-line;
+}
+
+.toast__text strong {
+  display: block;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* After an entry: a message in green for money in, red for money out, that drifts up and fades. */
+.toast--income,
+.toast--expense {
+  --tone: var(--gain);
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  background: color-mix(in srgb, var(--tone) 14%, var(--surface-solid));
+  color: var(--tone);
+  animation: drift 5s ease-out forwards;
+}
+
+.toast--expense {
+  --tone: var(--loss);
+}
+
+@keyframes drift {
+  0% {
+    transform: translateY(20px) scale(0.96);
+    opacity: 0;
+  }
+  6% {
+    transform: none;
+    opacity: 1;
+  }
+  88% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
 }
 
 .toast__action {

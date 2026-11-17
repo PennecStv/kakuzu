@@ -18,6 +18,9 @@
   --income: #5cc28a;
   --expense: #e9ecf3;
   --danger: #e66767;
+  /* the floating message after an entry: green for money in, red for money out */
+  --gain: #5cc28a;
+  --loss: var(--danger);
 
   /* set per theme from THEMES[theme].accent */
   --accent: #e8604a;

@@ -1,9 +1,14 @@
 import { useEffect } from 'react';
+import type { Kind } from '../store/types';
 
 export interface ToastMessage {
   id: number;
   text: string;
   action?: { label: string; run: () => void };
+  /** Shown above the text, in bold: the amount just added. */
+  figure?: string;
+  /** Colors the message green for money in, red for money out. */
+  tone?: Kind;
 }
 
 interface Props {
@@ -21,8 +26,11 @@ export function Toast({ toast, onDone }: Props) {
   return (
     <div className="toast-zone" role="status" aria-live="polite">
       {toast && (
-        <div className="toast" key={toast.id}>
-          <span>{toast.text}</span>
+        <div className={`toast${toast.tone ? ` toast--${toast.tone}` : ''}`} key={toast.id}>
+          <span className="toast__text">
+            {toast.figure && <strong>{toast.figure}</strong>}
+            {toast.text}
+          </span>
           {toast.action && (
             <button
               type="button"

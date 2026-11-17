@@ -9,7 +9,7 @@ import { Segmented } from './Segmented';
 interface Props {
   /** Absent for a new entry. */
   editing?: Transaction;
-  onSaved: (t: Pick<Transaction, 'date'>) => void;
+  onSaved: (t: Pick<Transaction, 'date' | 'kind' | 'amount'>) => void;
   onDelete: (t: Transaction) => void;
 }
 
