@@ -5,7 +5,6 @@ import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
-import { ThemeIcon } from './components/ThemeIcon';
 import { TransactionForm } from './components/TransactionForm';
 import { Wordmark } from './components/Wordmark';
 import { monthOf, today } from './lib/dates';
@@ -14,7 +13,7 @@ import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { Settings } from './screens/Settings';
 import { useStore } from './store/store';
-import type { Category, Kind, ThemeId, Transaction } from './store/types';
+import type { Category, Kind, Transaction } from './store/types';
 
 const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   history: 'Opérations',
@@ -22,12 +21,9 @@ const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   settings: 'Réglages',
 };
 
-const THEME_ORDER = Object.keys(THEMES) as ThemeId[];
-
 export function App() {
   const theme = useStore((s) => s.settings.theme);
   const motion = useStore((s) => s.settings.motion);
-  const setSettings = useStore((s) => s.setSettings);
   const deleteTransaction = useStore((s) => s.deleteTransaction);
   const restoreTransaction = useStore((s) => s.restoreTransaction);
 
@@ -57,9 +53,6 @@ export function App() {
     notify('Opération supprimée', { label: 'Annuler', run: () => restoreTransaction(t) });
   };
 
-  const current = THEMES[theme];
-  const nextTheme = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length];
-
   return (
     <>
       <AsciiBackground theme={theme} motion={motion} />
@@ -67,14 +60,6 @@ export function App() {
       <div className="app">
         <header className="top">
           <h1>{tab === 'home' ? <Wordmark /> : TITLES[tab]}</h1>
-          <button
-            type="button"
-            className="theme-chip"
-            onClick={() => setSettings({ theme: nextTheme })}
-            aria-label={`Thème ${current.name}, passer à ${THEMES[nextTheme].name}`}
-          >
-            <ThemeIcon theme={theme} />
-          </button>
         </header>
 
         <main className="screen">

@@ -3,7 +3,6 @@ import { THEMES } from '../ascii/themes';
 import { ThemeIcon } from '../components/ThemeIcon';
 import { toCsv } from '../lib/csv';
 import { today } from '../lib/dates';
-import { useInstall } from '../pwa';
 import { type Backup, readBackup } from '../store/backup';
 import { CURRENCIES } from '../store/defaults';
 import { useStore } from '../store/store';
@@ -25,7 +24,6 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const setSettings = useStore((s) => s.setSettings);
   const importBackup = useStore((s) => s.importBackup);
   const reset = useStore((s) => s.reset);
-  const install = useInstall();
   const file = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
@@ -148,23 +146,6 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         </div>
       </section>
 
-      {install.kind !== 'unavailable' && (
-        <section className="card" aria-labelledby="install-title">
-          <h2 id="install-title" className="card__title">
-            Application
-          </h2>
-          {install.kind === 'installed' && <p className="hint">Kakuzu est installée sur cet appareil.</p>}
-          {install.kind === 'prompt' && (
-            <button type="button" className="button button--primary button--wide" onClick={install.install}>
-              Installer sur l’écran d’accueil
-            </button>
-          )}
-          {install.kind === 'ios' && (
-            <p className="hint">Dans Safari : bouton Partager, puis « Sur l’écran d’accueil ».</p>
-          )}
-        </section>
-      )}
-
       <section className="card" aria-labelledby="reset-title">
         <h2 id="reset-title" className="card__title">
           Tout effacer
@@ -196,9 +177,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         )}
       </section>
 
-      <p className="about">
-        Kakuzu {__APP_VERSION__} · sans pub, sans compte, sans serveur.
-      </p>
+      <p className="about">Kakuzu {__APP_VERSION__}</p>
     </>
   );
 }

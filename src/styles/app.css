@@ -45,28 +45,6 @@
   fill: color-mix(in srgb, var(--accent) 50%, var(--bg));
 }
 
-.theme-chip {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--accent);
-  transition: border-color 0.2s;
-}
-
-.theme-chip svg {
-  width: 22px;
-  height: 22px;
-}
-
-.theme-chip:active {
-  border-color: var(--accent);
-}
-
 /* ---------- surfaces ---------- */
 
 .card {
