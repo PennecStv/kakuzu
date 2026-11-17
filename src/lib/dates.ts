@@ -35,6 +35,13 @@ export function monthLabel(month: MonthKey): string {
   return monthFormat.format(parseDay(`${month}-01`));
 }
 
+const shortMonthFormat = new Intl.DateTimeFormat('fr-FR', { month: 'short' });
+
+/** "nov.", "juin": a chart axis label. */
+export function monthShort(month: MonthKey): string {
+  return shortMonthFormat.format(parseDay(`${month}-01`));
+}
+
 export function dayLabel(day: DayKey, now: DayKey = today()): string {
   if (day === now) return "Aujourd'hui";
   const yesterday = parseDay(now);

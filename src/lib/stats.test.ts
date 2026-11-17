@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../store/types';
 import { toCsv } from './csv';
-import { expensesByCategory, foldSlices, groupByDay, inMonth, matchesQuery, sumByCategory, totals } from './stats';
+import {
+  expensesByCategory,
+  foldSlices,
+  groupByDay,
+  inMonth,
+  matchesQuery,
+  monthlyTotals,
+  niceTicks,
+  sumByCategory,
+  totals,
+} from './stats';
 
 let seq = 0;
 function tx(partial: Partial<Transaction>): Transaction {
@@ -105,5 +115,34 @@ describe('toCsv', () => {
       'Date;Type;Catégorie;Montant;Note',
       '2026-11-03;Dépense;Alimentation;-12,50;"Pain; beurre"',
     ]);
+  });
+});
+
+describe('monthlyTotals', () => {
+  it('sums each month of the window, oldest first, across a year change', () => {
+    const list = [
+      tx({ date: '2025-12-31', amount: 300 }),
+      tx({ date: '2026-02-01', kind: 'income', amount: 9000 }),
+      tx({ date: '2026-02-14', amount: 1200 }),
+      tx({ date: '2026-03-01', amount: 999 }),
+      tx({ date: '2025-10-01', amount: 50 }),
+    ];
+    expect(monthlyTotals(list, '2026-02', 3)).toEqual([
+      { month: '2025-12', income: 0, expense: 300 },
+      { month: '2026-01', income: 0, expense: 0 },
+      { month: '2026-02', income: 9000, expense: 1200 },
+    ]);
+  });
+});
+
+describe('niceTicks', () => {
+  it('reaches the max on a round step', () => {
+    expect(niceTicks(134000)).toEqual([0, 50000, 100000, 150000]);
+    expect(niceTicks(300)).toEqual([0, 100, 200, 300]);
+    expect(niceTicks(70000)).toEqual([0, 25000, 50000, 75000]);
+  });
+
+  it('has a single tick for an empty chart', () => {
+    expect(niceTicks(0)).toEqual([0]);
   });
 });

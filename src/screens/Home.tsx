@@ -2,10 +2,11 @@ import { type CSSProperties, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { MonthSwitcher } from '../components/MonthSwitcher';
+import { TrendChart } from '../components/TrendChart';
 import { TransactionRow } from '../components/TransactionRow';
 import { type MonthKey, monthLabel } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
-import { type Slice, expensesByCategory, foldSlices, groupByDay, inMonth, sliceKey, totals } from '../lib/stats';
+import { type Slice, expensesByCategory, foldSlices, groupByDay, inMonth, monthlyTotals, sliceKey, totals } from '../lib/stats';
 import { useStore } from '../store/store';
 import type { Transaction } from '../store/types';
 
@@ -25,6 +26,7 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const monthly = useMemo(() => inMonth(transactions, month), [transactions, month]);
+  const trend = useMemo(() => monthlyTotals(transactions, month, 6), [transactions, month]);
   const { sum, breakdown, slices, recent } = useMemo(() => {
     const breakdown = expensesByCategory(monthly);
     return {
@@ -129,6 +131,8 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
           </>
         )}
       </section>
+
+      {trend.some((r) => r.income || r.expense) && <TrendChart rows={trend} currency={currency} />}
 
       {recent.length > 0 && (
         <section className="card" aria-labelledby="recent-title">

@@ -27,6 +27,15 @@ export function formatMoney(minor: number, currency: string): string {
   return formatter(currency).format(minor / SCALE);
 }
 
+const axisFull = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
+const axisCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+
+/** Chart tick without the currency: "1 000" below ten thousand, "25 k" above. */
+export function formatAxis(minor: number): string {
+  const value = minor / SCALE;
+  return (value >= 10_000 ? axisCompact : axisFull).format(value);
+}
+
 /** "€" for EUR, "$" for USD: what to print next to an amount field. */
 export function currencySymbol(currency: string): string {
   const parts = new Intl.NumberFormat('fr-FR', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).formatToParts(0);

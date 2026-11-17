@@ -1,5 +1,5 @@
 import type { Category, Transaction } from '../store/types';
-import { monthOf, type DayKey, type MonthKey } from './dates';
+import { monthOf, shiftMonth, type DayKey, type MonthKey } from './dates';
 
 export interface Totals {
   income: number;
@@ -19,6 +19,32 @@ export function totals(transactions: Transaction[]): Totals {
     else expense += t.amount;
   }
   return { income, expense, balance: income - expense };
+}
+
+export interface MonthTotals {
+  month: MonthKey;
+  income: number;
+  expense: number;
+}
+
+/** Income and expense of the `count` months ending with `end`, oldest first. Empty months are zero. */
+export function monthlyTotals(transactions: Transaction[], end: MonthKey, count: number): MonthTotals[] {
+  const rows = Array.from({ length: count }, (_, i) => ({ month: shiftMonth(end, i - count + 1), income: 0, expense: 0 }));
+  const byMonth = new Map(rows.map((r) => [r.month, r]));
+  for (const t of transactions) {
+    const row = byMonth.get(monthOf(t.date));
+    if (row) row[t.kind] += t.amount;
+  }
+  return rows;
+}
+
+/** Axis ticks from 0 to at least `max`, on a 1-2-2.5-5 step, `count` intervals at most. */
+export function niceTicks(max: number, count = 3): number[] {
+  if (max <= 0) return [0];
+  const raw = max / count;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((f) => f * magnitude).find((s) => s >= raw) ?? 10 * magnitude;
+  return Array.from({ length: Math.ceil(max / step) + 1 }, (_, i) => i * step);
 }
 
 export interface Slice {
