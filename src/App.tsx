@@ -3,6 +3,7 @@ import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
+import { Explosion } from './components/Explosion';
 import { GoalForm } from './components/GoalForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
@@ -36,6 +37,7 @@ export function App() {
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
   const [goalSheet, setGoalSheet] = useState<{ editing?: Goal } | null>(null);
+  const [blast, setBlast] = useState<{ key: number; goalId: string } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const lastQuip = useRef<string>(undefined);
 
@@ -135,13 +137,25 @@ export function App() {
           <GoalForm
             key={goalSheet.editing?.id ?? 'new'}
             editing={goalSheet.editing}
-            onDone={(message) => {
+            onDone={(message, reached) => {
               setGoalSheet(null);
-              notify(message);
+              if (!reached) return notify(message);
+              setToast({ id: Date.now(), text: message, tone: 'income' });
+              if (goalSheet?.editing) setBlast({ key: Date.now(), goalId: goalSheet.editing.id });
             }}
           />
         )}
       </Sheet>
+
+      {blast && (
+        // The theme's accent leads, then ink, the gain green and gold.
+        <Explosion
+          key={blast.key}
+          goalId={blast.goalId}
+          colors={[THEMES[theme].accent, '#e9ecf3', '#5cc28a', '#e0a526']}
+          onEnd={() => setBlast(null)}
+        />
+      )}
 
       <Toast toast={toast} onDone={clearToast} />
     </>

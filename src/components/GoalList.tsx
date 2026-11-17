@@ -20,6 +20,7 @@ export function GoalList({ goals, currency, onOpen }: Props) {
             <button
               type="button"
               className={`goal${done ? ' is-done' : ''}`}
+              data-goal={g.id}
               style={{ '--fill': `${share * 100}%` } as CSSProperties}
               onClick={() => onOpen(g)}
             >

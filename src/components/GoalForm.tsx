@@ -6,7 +6,8 @@ import type { Goal } from '../store/types';
 interface Props {
   /** Absent for a new goal. */
   editing?: Goal;
-  onDone: (message: string) => void;
+  /** `reached` when a payment just took the goal to its target. */
+  onDone: (message: string, reached?: boolean) => void;
 }
 
 export function GoalForm({ editing, onDone }: Props) {
@@ -32,8 +33,10 @@ export function GoalForm({ editing, onDone }: Props) {
       setMoveError(`Il n’y a que ${formatMoney(goal.saved, currency)} de côté.`);
       return;
     }
-    updateGoal(goal.id, { saved: goal.saved + sign * minor });
-    onDone(`${formatMoney(minor, currency)} ${sign > 0 ? 'versés' : 'retirés'}`);
+    const saved = goal.saved + sign * minor;
+    updateGoal(goal.id, { saved });
+    if (goal.saved < goal.target && saved >= goal.target) onDone(`Objectif atteint : ${goal.name}`, true);
+    else onDone(`${formatMoney(minor, currency)} ${sign > 0 ? 'versés' : 'retirés'}`);
   };
 
   const submit = (e: FormEvent) => {
