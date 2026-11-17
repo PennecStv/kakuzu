@@ -14,17 +14,17 @@
   --ink-2: #a9b2c6;
   --ink-3: #8a93a8;
 
+  /* set per theme from THEMES[theme].accent */
+  --accent: #e8604a;
+  --accent-ink: #070b14;
+
   /* meaning, always paired with a sign or a word */
-  --income: #5cc28a;
+  --income: var(--accent);
   --expense: #e9ecf3;
   --danger: #e66767;
   /* the floating message after an entry: green for money in, red for money out */
   --gain: #5cc28a;
   --loss: var(--danger);
-
-  /* set per theme from THEMES[theme].accent */
-  --accent: #e8604a;
-  --accent-ink: #070b14;
 
   /* categorical palette, validated against --surface-solid (dataviz skill, dark mode) */
   --cat-0: #3987e5;
