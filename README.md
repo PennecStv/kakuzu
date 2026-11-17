@@ -23,18 +23,13 @@
 
 <br />
 
-<img src="docs/screens/home-koi.png" width="200" alt="Accueil, thème carpes koï" />
-<img src="docs/screens/history-frogs.png" width="200" alt="Opérations, thème grenouilles" />
-<img src="docs/screens/add-butterflies.png" width="200" alt="Ajout d'une dépense, thème papillons" />
-<img src="docs/screens/categories-herons.png" width="200" alt="Catégories et budgets, thème hérons" />
+<img src="docs/kakuzu-money.png" width="260" alt="Kakuzu, liasses de billets en main" />
 
 </div>
 
 ---
 
 ## 一 · Pourquoi
-
-<img src="docs/kakuzu-money.png" align="right" width="200" alt="Kakuzu, liasses de billets en main" />
 
 Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fait la même chose sans pub, sans compte et sans serveur : les données restent dans le navigateur du téléphone, et l'appli marche hors ligne une fois installée.
 
