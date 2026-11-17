@@ -2,36 +2,43 @@ import { type CSSProperties, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
+import { Segmented } from '../components/Segmented';
 import { TrendChart } from '../components/TrendChart';
 import { TransactionRow } from '../components/TransactionRow';
 import { type Period, type Unit, lastMonth, unitOf } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
-import { type Slice, expensesByCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
+import { type Slice, byCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
 import { categoryColor, useStore } from '../store/store';
-import type { Transaction } from '../store/types';
+import type { Kind, Transaction } from '../store/types';
 
 interface Props {
   period: Period;
   onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
-  onAdd: () => void;
+  onAdd: (kind: Kind) => void;
   onSeeAll: () => void;
 }
 
 const BALANCE: Record<Unit, string> = { day: 'Solde du jour', month: 'Solde du mois', year: 'Solde de l’année' };
+
+const SPLIT: Record<Kind, { caption: string; empty: string; add: string }> = {
+  expense: { caption: 'dépensés', empty: 'Aucune dépense sur cette période.', add: 'Ajouter une dépense' },
+  income: { caption: 'reçus', empty: 'Aucun revenu sur cette période.', add: 'Ajouter un revenu' },
+};
 
 export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
   const transactions = useStore((s) => s.transactions);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [active, setActive] = useState<string | null>(null);
+  const [kind, setKind] = useState<Kind>('expense');
   const unit = unitOf(period);
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const scoped = useMemo(() => inPeriod(transactions, period), [transactions, period]);
   const trend = useMemo(() => monthlyTotals(transactions, lastMonth(period), 6), [transactions, period]);
   const { sum, breakdown, slices, recent } = useMemo(() => {
-    const breakdown = expensesByCategory(scoped);
+    const breakdown = byCategory(scoped, kind);
     return {
       sum: totals(scoped),
       breakdown,
@@ -40,7 +47,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
         .flatMap((g) => g.transactions)
         .slice(0, 5),
     };
-  }, [scoped]);
+  }, [scoped, kind]);
 
   const colorOf = (s: Slice) => categoryColor(s.id ? byId.get(s.id) : undefined);
   const labelOf = (s: Slice) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres');
@@ -73,14 +80,26 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
 
       <section className="card" aria-labelledby="split-title">
         <h2 id="split-title" className="card__title">
-          Dépenses par catégorie
+          Par catégorie
         </h2>
+        <Segmented
+          label="Répartition"
+          value={kind}
+          onChange={(k) => {
+            setKind(k);
+            setActive(null);
+          }}
+          options={[
+            { value: 'expense', label: 'Dépenses' },
+            { value: 'income', label: 'Revenus' },
+          ]}
+        />
         {breakdown.length === 0 ? (
           <div className="empty">
             <pre className="empty__art" aria-hidden="true">{'   ><(((°>\n ~  ~   ~  ~'}</pre>
-            <p>Aucune dépense sur cette période.</p>
-            <button type="button" className="button button--primary" onClick={onAdd}>
-              Ajouter une dépense
+            <p>{SPLIT[kind].empty}</p>
+            <button type="button" className="button button--primary" onClick={() => onAdd(kind)}>
+              {SPLIT[kind].add}
             </button>
           </div>
         ) : (
@@ -91,7 +110,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
               labelOf={labelOf}
               active={active}
               onSelect={setActive}
-              center={{ value: money(sum.expense), caption: 'dépensés' }}
+              center={{ value: money(kind === 'expense' ? sum.expense : sum.income), caption: SPLIT[kind].caption }}
               activeValue={(s) => money(s.amount)}
             />
             <ul className="split">

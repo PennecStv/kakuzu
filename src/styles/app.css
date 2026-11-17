@@ -129,6 +129,10 @@
   gap: 8px;
 }
 
+.card > .segmented {
+  margin-bottom: 12px;
+}
+
 .month {
   display: flex;
   align-items: center;

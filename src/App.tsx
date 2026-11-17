@@ -32,7 +32,7 @@ export function App() {
 
   const [tab, setTab] = useState<Tab>('home');
   const [period, setPeriod] = useState(() => monthOf(today()));
-  const [txSheet, setTxSheet] = useState<{ editing?: Transaction } | null>(null);
+  const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const lastQuip = useRef<string>(undefined);
@@ -72,7 +72,7 @@ export function App() {
               period={period}
               onPeriod={setPeriod}
               onOpen={openTransaction}
-              onAdd={() => openTransaction()}
+              onAdd={(kind) => setTxSheet({ kind })}
               onSeeAll={() => go('history')}
             />
           )}
@@ -90,8 +90,9 @@ export function App() {
         onClose={() => setTxSheet(null)}
       >
         <TransactionForm
-          key={txSheet?.editing?.id ?? 'new'}
+          key={txSheet?.editing?.id ?? `new-${txSheet?.kind ?? 'expense'}`}
           editing={txSheet?.editing}
+          kind={txSheet?.kind}
           onDelete={removeTransaction}
           onSaved={(t) => {
             if (txSheet?.editing) notify('Opération modifiée');
