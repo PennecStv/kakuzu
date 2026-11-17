@@ -1,5 +1,42 @@
 import { describe, expect, it } from 'vitest';
-import { dayLabel, monthLabel, monthOf, shiftMonth } from './dates';
+import { dayLabel, lastMonth, monthLabel, monthOf, periodLabel, shiftMonth, shiftPeriod, unitOf, withUnit } from './dates';
+
+describe('periods', () => {
+  it('reads the unit from the length', () => {
+    expect(unitOf('2026')).toBe('year');
+    expect(unitOf('2026-11')).toBe('month');
+    expect(unitOf('2026-11-17')).toBe('day');
+  });
+
+  it('shifts by its own unit', () => {
+    expect(shiftPeriod('2026', -1)).toBe('2025');
+    expect(shiftPeriod('2026-01', -1)).toBe('2025-12');
+    expect(shiftPeriod('2026-03-01', -1)).toBe('2026-02-28');
+    expect(shiftPeriod('2026-12-31', 1)).toBe('2027-01-01');
+  });
+
+  it('changes unit around today when the period holds it, else around its start', () => {
+    const now = '2026-11-17';
+    expect(withUnit('2026', 'day', now)).toBe('2026-11-17');
+    expect(withUnit('2026-11', 'year', now)).toBe('2026');
+    expect(withUnit('2025', 'month', now)).toBe('2025-01');
+    expect(withUnit('2025-06', 'day', now)).toBe('2025-06-01');
+    expect(withUnit('2025-06-14', 'month', now)).toBe('2025-06');
+  });
+
+  it('ends a trend on the last month, never past today', () => {
+    const now = '2026-11-17';
+    expect(lastMonth('2025', now)).toBe('2025-12');
+    expect(lastMonth('2026', now)).toBe('2026-11');
+    expect(lastMonth('2025-03-04', now)).toBe('2025-03');
+  });
+
+  it('labels each unit', () => {
+    expect(periodLabel('2026')).toBe('2026');
+    expect(periodLabel('2026-11')).toBe('novembre 2026');
+    expect(periodLabel('2026-11-16', '2026-11-16')).toBe("Aujourd'hui");
+  });
+});
 
 describe('months', () => {
   it('shifts across year boundaries', () => {

@@ -121,7 +121,17 @@
   color: var(--income);
 }
 
-/* ---------- month switcher ---------- */
+/* ---------- period switcher ---------- */
+
+.period {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card > .segmented {
+  margin-bottom: 12px;
+}
 
 .month {
   display: flex;
@@ -361,6 +371,20 @@
   list-style: none;
 }
 
+.split--scroll {
+  max-height: 312px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent);
+}
+
+.split--scroll.is-end {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .split__row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
@@ -422,6 +446,12 @@
 
 .budget__bar > span.is-over {
   background: var(--danger);
+}
+
+.goal-move {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .budget__text {
@@ -857,6 +887,35 @@
   color: var(--ink-3);
 }
 
+.theme__reading [lang='ja'] {
+  color: var(--ink-2);
+}
+
+/* ---------- home order ---------- */
+
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order__row span {
+  flex: 1;
+}
+
+.order .icon-button:disabled {
+  opacity: 0.35;
+}
+
 .about {
   margin: 8px 0 0;
   font-size: 12px;
@@ -1286,6 +1345,102 @@
   font-weight: 600;
 }
 
+/* ---------- goals ---------- */
+
+/* Registered so the fill animates like a length; inherited so the row and its bar move together. */
+@property --fill {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+.goals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The theme's accent fills the row up to the share saved, deeper as it nears the target; capped at 28 % so --ink-2 keeps 4.5:1 on the palest accent. */
+.goal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 2px 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 5%, transparent),
+    color-mix(in srgb, var(--accent) calc(12% + var(--fill) * 0.16), transparent) var(--fill),
+    transparent var(--fill)
+  );
+  text-align: left;
+  transition: --fill 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: goal-fill 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.goal.is-done {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.goal__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal__name svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  color: var(--accent);
+  animation: goal-pop 0.5s 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.goal .split__share,
+.goal .budget__text {
+  color: var(--ink-2);
+}
+
+.goal .budget {
+  grid-column: 1 / -1;
+}
+
+.goal .budget__bar > span {
+  width: var(--fill);
+}
+
+@keyframes goal-fill {
+  from {
+    --fill: 0%;
+  }
+}
+
+@keyframes goal-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+/* ---------- goal reached ---------- */
+
+.blast {
+  position: fixed;
+  z-index: 4;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1293,4 +1448,72 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ---------- spreadsheet import ---------- */
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row .button {
+  flex: 1;
+}
+
+.row .icon-button[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sheet-format {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.sheet-format p,
+.sheet-format dl {
+  margin: 0;
+}
+
+.sheet-format dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+}
+
+.sheet-format dt {
+  color: var(--ink);
+}
+
+.sheet-format dd {
+  margin: 0;
+}
+
+.sheet-format__table {
+  overflow-x: auto;
+}
+
+.sheet-format table {
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sheet-format th,
+.sheet-format td {
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  text-align: left;
+}
+
+.sheet-format th {
+  color: var(--ink);
+  font-weight: 500;
 }

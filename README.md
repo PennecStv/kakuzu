@@ -37,10 +37,10 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 
 | Écran      | Contenu                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------- |
-| Accueil    | Solde du mois, revenus et dépenses, courbe sur six mois, camembert des dépenses par catégorie, budgets restants, dernières opérations |
-| Opérations | Historique du mois groupé par jour, recherche par note ou catégorie, filtre dépenses / revenus                |
+| Accueil    | Solde du jour, du mois ou de l'année, revenus et dépenses, objectifs, courbe sur six mois, camembert des dépenses ou des revenus par catégorie, budgets restants, dernières opérations |
+| Suivi      | Opérations du jour, du mois ou de l'année groupées par jour, recherche par note ou catégorie, filtre dépenses / revenus ; objectifs d'épargne |
 | Catégories | Catégories de dépenses et de revenus, icône, couleur, budget mensuel                                          |
-| Réglages   | Thème animé, devise, export JSON et CSV, import, remise à zéro                                                |
+| Réglages   | Thème animé, devise, export JSON et CSV, import d'une sauvegarde ou d'un tableur (Excel, CSV), remise à zéro |
 
 - **Ajout en trois gestes** : le bouton `+` ouvre une feuille avec le pavé numérique déjà ouvert, on choisit la catégorie et on valide.
 - **Un message à chaque ajout** : vert pour un revenu (« Racks on racks on racks... »), rouge pour une dépense (« Not stonks... »).
@@ -49,6 +49,8 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 - **Annuler une suppression** : chaque suppression propose « Annuler » pendant cinq secondes.
 - **Camembert lisible** : six parts au plus, la fin de liste est regroupée dans « Autres ». Toucher une part, ou sa ligne, affiche son montant au centre.
 - **Export pour tableur** : le CSV utilise le point-virgule et la virgule décimale, Excel en français l'ouvre tel quel.
+- **Import de tableur** : un fichier .xlsx ou .csv avec les colonnes Date, Type, Catégorie, Montant, Note s'ajoute aux opérations. Le bouton « i » à côté de l'import affiche le format attendu.
+- **Objectifs** : « PC neuf », « Livret A 500 € » ; on verse ou retire à la main, sans toucher au solde.
 
 ## 三 · Les thèmes
 

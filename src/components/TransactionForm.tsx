@@ -9,17 +9,19 @@ import { Segmented } from './Segmented';
 interface Props {
   /** Absent for a new entry. */
   editing?: Transaction;
+  /** Starting kind of a new entry. */
+  kind?: Kind;
   onSaved: (t: Pick<Transaction, 'date' | 'kind' | 'amount'>) => void;
   onDelete: (t: Transaction) => void;
 }
 
-export function TransactionForm({ editing, onSaved, onDelete }: Props) {
+export function TransactionForm({ editing, kind: initialKind = 'expense', onSaved, onDelete }: Props) {
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const addTransaction = useStore((s) => s.addTransaction);
   const updateTransaction = useStore((s) => s.updateTransaction);
 
-  const [kind, setKind] = useState<Kind>(editing?.kind ?? 'expense');
+  const [kind, setKind] = useState<Kind>(editing?.kind ?? initialKind);
   const [amount, setAmount] = useState(editing ? toInput(editing.amount, currency) : '');
   const [categoryId, setCategoryId] = useState(editing?.categoryId ?? '');
   const [date, setDate] = useState(editing?.date ?? today());

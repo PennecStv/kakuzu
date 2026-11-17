@@ -3,6 +3,8 @@ import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
+import { Explosion } from './components/Explosion';
+import { GoalForm } from './components/GoalForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
 import { TransactionForm } from './components/TransactionForm';
@@ -15,10 +17,10 @@ import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { Settings } from './screens/Settings';
 import { useStore } from './store/store';
-import type { Category, Kind, Transaction } from './store/types';
+import type { Category, Goal, Kind, Transaction } from './store/types';
 
 const TITLES: Record<Exclude<Tab, 'home'>, string> = {
-  history: 'Opérations',
+  history: 'Suivi',
   categories: 'Catégories',
   settings: 'Réglages',
 };
@@ -31,9 +33,11 @@ export function App() {
   const restoreTransaction = useStore((s) => s.restoreTransaction);
 
   const [tab, setTab] = useState<Tab>('home');
-  const [month, setMonth] = useState(() => monthOf(today()));
-  const [txSheet, setTxSheet] = useState<{ editing?: Transaction } | null>(null);
+  const [period, setPeriod] = useState(() => monthOf(today()));
+  const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
+  const [goalSheet, setGoalSheet] = useState<{ editing?: Goal } | null>(null);
+  const [blast, setBlast] = useState<{ key: number; goalId: string } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const lastQuip = useRef<string>(undefined);
 
@@ -69,15 +73,16 @@ export function App() {
         <main className="screen">
           {tab === 'home' && (
             <Home
-              month={month}
-              onMonth={setMonth}
+              period={period}
+              onPeriod={setPeriod}
               onOpen={openTransaction}
-              onAdd={() => openTransaction()}
+              onAdd={(kind) => setTxSheet({ kind })}
               onSeeAll={() => go('history')}
+              onGoal={(editing) => setGoalSheet({ editing })}
             />
           )}
-          {tab === 'history' && <History month={month} onMonth={setMonth} onOpen={openTransaction} />}
-          {tab === 'categories' && <Categories month={month} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
+          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} onGoal={(editing) => setGoalSheet({ editing })} />}
+          {tab === 'categories' && <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
           {tab === 'settings' && <Settings notify={notify} />}
         </main>
       </div>
@@ -90,8 +95,9 @@ export function App() {
         onClose={() => setTxSheet(null)}
       >
         <TransactionForm
-          key={txSheet?.editing?.id ?? 'new'}
+          key={txSheet?.editing?.id ?? `new-${txSheet?.kind ?? 'expense'}`}
           editing={txSheet?.editing}
+          kind={txSheet?.kind}
           onDelete={removeTransaction}
           onSaved={(t) => {
             if (txSheet?.editing) notify('Opération modifiée');
@@ -102,7 +108,8 @@ export function App() {
               setToast({ id: Date.now(), text: quip, figure: `${sign}${formatMoney(t.amount, currency)}`, tone: t.kind });
             }
             setTxSheet(null);
-            setMonth(monthOf(t.date));
+            // Follow the entry to its period, in the unit already picked.
+            setPeriod((p) => t.date.slice(0, p.length));
           }}
         />
       </Sheet>
@@ -124,6 +131,31 @@ export function App() {
           />
         )}
       </Sheet>
+
+      <Sheet open={goalSheet !== null} title={goalSheet?.editing?.name ?? 'Nouvel objectif'} onClose={() => setGoalSheet(null)}>
+        {goalSheet && (
+          <GoalForm
+            key={goalSheet.editing?.id ?? 'new'}
+            editing={goalSheet.editing}
+            onDone={(message, reached) => {
+              setGoalSheet(null);
+              if (!reached) return notify(message);
+              setToast({ id: Date.now(), text: message, tone: 'income' });
+              if (goalSheet?.editing) setBlast({ key: Date.now(), goalId: goalSheet.editing.id });
+            }}
+          />
+        )}
+      </Sheet>
+
+      {blast && (
+        // The theme's accent leads, then ink, the gain green and gold.
+        <Explosion
+          key={blast.key}
+          goalId={blast.goalId}
+          colors={[THEMES[theme].accent, '#e9ecf3', '#5cc28a', '#e0a526']}
+          onEnd={() => setBlast(null)}
+        />
+      )}
 
       <Toast toast={toast} onDone={clearToast} />
     </>

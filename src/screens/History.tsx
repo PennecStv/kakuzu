@@ -1,21 +1,25 @@
 import { useMemo, useState } from 'react';
-import { MonthSwitcher } from '../components/MonthSwitcher';
+import { GoalList } from '../components/GoalList';
+import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
-import { type MonthKey, dayLabel, monthLabel } from '../lib/dates';
+import { type Period, dayLabel } from '../lib/dates';
 import { formatSigned } from '../lib/money';
-import { groupByDay, inMonth, matchesQuery } from '../lib/stats';
+import { groupByDay, inPeriod, matchesQuery } from '../lib/stats';
 import { useStore } from '../store/store';
-import type { Kind, Transaction } from '../store/types';
+import type { Goal, Kind, Transaction } from '../store/types';
 
 interface Props {
-  month: MonthKey;
-  onMonth: (m: MonthKey) => void;
+  period: Period;
+  onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
+  onGoal: (goal?: Goal) => void;
 }
 
-export function History({ month, onMonth, onOpen }: Props) {
+export function History({ period, onPeriod, onOpen, onGoal }: Props) {
+  const [view, setView] = useState<'entries' | 'goals'>('entries');
   const transactions = useStore((s) => s.transactions);
+  const goals = useStore((s) => s.goals);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [query, setQuery] = useState('');
@@ -25,16 +29,47 @@ export function History({ month, onMonth, onOpen }: Props) {
   const groups = useMemo(
     () =>
       groupByDay(
-        inMonth(transactions, month).filter(
+        inPeriod(transactions, period).filter(
           (t) => (kind === 'all' || t.kind === kind) && matchesQuery(t, byId.get(t.categoryId), query),
         ),
       ),
-    [transactions, month, kind, query, byId],
+    [transactions, period, kind, query, byId],
   );
+
+  const switcher = (
+    <Segmented
+      label="Afficher"
+      value={view}
+      onChange={setView}
+      options={[
+        { value: 'entries', label: 'Opérations' },
+        { value: 'goals', label: 'Objectifs' },
+      ]}
+    />
+  );
+
+  if (view === 'goals') {
+    return (
+      <>
+        {switcher}
+        {goals.length > 0 ? (
+          <section className="card" aria-label="Objectifs">
+            <GoalList goals={goals} currency={currency} onOpen={onGoal} />
+          </section>
+        ) : (
+          <p className="card empty">Aucun objectif pour l’instant.</p>
+        )}
+        <button type="button" className="button button--wide" onClick={() => onGoal()}>
+          Nouvel objectif
+        </button>
+      </>
+    );
+  }
 
   return (
     <>
-      <MonthSwitcher month={month} onChange={onMonth} />
+      {switcher}
+      <PeriodSwitcher period={period} onChange={onPeriod} />
 
       <div className="filters">
         <label className="search">
@@ -60,7 +95,7 @@ export function History({ month, onMonth, onOpen }: Props) {
 
       {groups.length === 0 ? (
         <p className="card empty">
-          {query || kind !== 'all' ? 'Aucune opération ne correspond.' : `Aucune opération en ${monthLabel(month)}.`}
+          {query || kind !== 'all' ? 'Aucune opération ne correspond.' : 'Aucune opération sur cette période.'}
         </p>
       ) : (
         groups.map((g) => (

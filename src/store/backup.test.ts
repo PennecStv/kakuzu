@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readBackup } from './backup';
+import { homeOrder } from './defaults';
 import type { Settings } from './types';
 
 const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true };
@@ -34,6 +35,21 @@ describe('readBackup', () => {
     ];
     const backup = readBackup(JSON.stringify({ ...valid, categories }), fallback);
     expect(backup.categories.map((c) => c.color)).toEqual(['#1bb3ba']);
+  });
+
+  it('reads goals, and none from older files', () => {
+    expect(readBackup(JSON.stringify(valid), fallback).goals).toEqual([]);
+    const goals = [
+      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000 },
+      { id: 'bad', name: 'Sans cible', target: 0, saved: 0 },
+    ];
+    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([goals[0]]);
+  });
+
+  it('cleans the home card order', () => {
+    const settings = { ...valid.settings, home: ['trend', 'nope', 'trend', 'goals'] };
+    expect(readBackup(JSON.stringify({ ...valid, settings }), fallback).settings.home).toEqual(['trend', 'goals', 'balance', 'split', 'recent']);
+    expect(homeOrder(undefined)).toEqual(['balance', 'split', 'goals', 'trend', 'recent']);
   });
 
   it('rejects files from elsewhere', () => {

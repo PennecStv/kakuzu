@@ -27,8 +27,22 @@ export interface Transaction {
   createdAt: number;
 }
 
+/** Money put aside by hand for a project, outside the entries. */
+export interface Goal {
+  id: string;
+  name: string;
+  /** Amount to reach, in minor units. */
+  target: number;
+  /** Amount put aside so far, in minor units, never negative. */
+  saved: number;
+}
+
+export type HomeCard = 'balance' | 'split' | 'goals' | 'trend' | 'recent';
+
 export interface Settings {
   theme: ThemeId;
   currency: string;
   motion: boolean;
+  /** Order of the home cards. Absent until the user changes it: read it through homeOrder. */
+  home?: HomeCard[];
 }

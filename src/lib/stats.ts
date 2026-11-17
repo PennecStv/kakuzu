@@ -1,5 +1,5 @@
-import type { Category, Transaction } from '../store/types';
-import { monthOf, shiftMonth, type DayKey, type MonthKey } from './dates';
+import type { Category, Kind, Transaction } from '../store/types';
+import { monthOf, shiftMonth, type DayKey, type MonthKey, type Period } from './dates';
 
 export interface Totals {
   income: number;
@@ -7,8 +7,8 @@ export interface Totals {
   balance: number;
 }
 
-export function inMonth(transactions: Transaction[], month: MonthKey): Transaction[] {
-  return transactions.filter((t) => monthOf(t.date) === month);
+export function inPeriod(transactions: Transaction[], period: Period): Transaction[] {
+  return transactions.filter((t) => t.date.startsWith(period));
 }
 
 export function totals(transactions: Transaction[]): Totals {
@@ -61,9 +61,9 @@ export function sumByCategory(transactions: Transaction[]): Map<string, number> 
   return sums;
 }
 
-/** Expense total per category, largest first. */
-export function expensesByCategory(transactions: Transaction[]): Slice[] {
-  const sums = sumByCategory(transactions.filter((t) => t.kind === 'expense'));
+/** Total per category of one kind, largest first. */
+export function byCategory(transactions: Transaction[], kind: Kind): Slice[] {
+  const sums = sumByCategory(transactions.filter((t) => t.kind === kind));
   const total = [...sums.values()].reduce((a, b) => a + b, 0);
   return [...sums]
     .map(([id, amount]) => ({ id, amount, share: total ? amount / total : 0 }))

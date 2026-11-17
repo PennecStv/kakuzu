@@ -48,6 +48,49 @@ function toRgba(hex: string, alpha: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
+/** Each hex color in LEVELS opacities, the indexes `tone` points at. */
+export function toPalette(colors: string[]): string[] {
+  return colors.flatMap((hex) => Array.from({ length: LEVELS }, (_, level) => toRgba(hex, (level + 1) / LEVELS)));
+}
+
+/** Cell size and font for a screen width. */
+export function metrics(width: number) {
+  // Monospace glyphs are about 0.6em wide: a font of 1.6 cells fills the cell edge to edge.
+  const cellW = clamp(Math.round(Math.sqrt(width) * 0.4), 8, 11);
+  return { cellW, cellH: Math.round(cellW * 1.6), font: `500 ${Math.round(cellW * 1.62)}px ${FONT}` };
+}
+
+const glyphs = new Map<number, string>();
+
+/** Clears the canvas and draws every glyph of the grid. */
+export function paintGrid(ctx: CanvasRenderingContext2D, grid: Grid, palette: string[], font: string, dpr: number) {
+  const { cols, rows, cellW, cellH, chars, colors } = grid;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cols * cellW, rows * cellH);
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  let current = -1;
+  for (let row = 0; row < rows; row++) {
+    const y = (row + 0.5) * cellH;
+    for (let col = 0; col < cols; col++) {
+      const i = row * cols + col;
+      const ch = chars[i];
+      if (ch === 0) continue;
+      if (colors[i] !== current) {
+        current = colors[i];
+        ctx.fillStyle = palette[current] ?? '#fff';
+      }
+      let glyph = glyphs.get(ch);
+      if (glyph === undefined) {
+        glyph = String.fromCharCode(ch);
+        glyphs.set(ch, glyph);
+      }
+      ctx.fillText(glyph, (col + 0.5) * cellW, y);
+    }
+  }
+}
+
 /**
  * Runs one scene on one canvas: sizing, the frame loop (capped at 24 fps to
  * spare batteries), pointer input, shared ripples and the final glyph pass.
@@ -58,7 +101,6 @@ export class AsciiEngine {
   private palette: string[] = [];
   private scene: Scene;
   private ripples: Ripple[] = [];
-  private glyphs = new Map<number, string>();
   private raf = 0;
   private last = 0;
   private dpr = 1;
@@ -103,9 +145,7 @@ export class AsciiEngine {
   }
 
   private load(spec: SceneSpec): Scene {
-    this.palette = spec.colors.flatMap((hex) =>
-      Array.from({ length: LEVELS }, (_, level) => toRgba(hex, (level + 1) / LEVELS)),
-    );
+    this.palette = toPalette(spec.colors);
     this.ripples = [];
     const scene = spec.create(this.world);
     // Let the scene settle so animals start spread out instead of on their spawn points.
@@ -147,11 +187,9 @@ export class AsciiEngine {
     this.canvas.height = Math.round(height * this.dpr);
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    // Monospace glyphs are about 0.6em wide: a font of 1.6 cells fills the cell edge to edge.
-    const cellW = clamp(Math.round(Math.sqrt(width) * 0.4), 8, 11);
-    const cellH = Math.round(cellW * 1.6);
+    const { cellW, cellH, font } = metrics(width);
     this.grid.resize(width, height, cellW, cellH);
-    this.font = `500 ${Math.round(cellW * 1.62)}px ${FONT}`;
+    this.font = font;
     this.world.width = width;
     this.world.height = height;
   }
@@ -218,40 +256,11 @@ export class AsciiEngine {
     }
   }
 
-  private glyph(code: number): string {
-    let g = this.glyphs.get(code);
-    if (g === undefined) {
-      g = String.fromCharCode(code);
-      this.glyphs.set(code, g);
-    }
-    return g;
-  }
-
   private paint() {
     const { grid, ctx } = this;
     grid.clear();
     this.scene.draw(grid, this.world);
     this.drawRipples();
-
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.clearRect(0, 0, this.world.width, this.world.height);
-    ctx.font = this.font;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    let current = -1;
-    const { cols, rows, cellW, cellH, chars, colors } = grid;
-    for (let row = 0; row < rows; row++) {
-      const y = (row + 0.5) * cellH;
-      for (let col = 0; col < cols; col++) {
-        const i = row * cols + col;
-        const ch = chars[i];
-        if (ch === 0) continue;
-        if (colors[i] !== current) {
-          current = colors[i];
-          ctx.fillStyle = this.palette[current] ?? '#fff';
-        }
-        ctx.fillText(this.glyph(ch), (col + 0.5) * cellW, y);
-      }
-    }
+    paintGrid(ctx, grid, this.palette, this.font, this.dpr);
   }
 }

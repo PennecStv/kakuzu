@@ -1,4 +1,4 @@
-import type { Category } from './types';
+import type { Category, HomeCard } from './types';
 
 /** Starter set. Ids are stable so a reset or an import never orphans entries. */
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -17,3 +17,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
 
 
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'MGA'];
+
+export const HOME_CARDS: HomeCard[] = ['balance', 'split', 'goals', 'trend', 'recent'];
+
+/** A saved card order, cleaned: unknown ids and repeats dropped, cards it lacks added at the end. */
+export function homeOrder(saved: unknown): HomeCard[] {
+  const known = Array.isArray(saved) ? saved.filter((id): id is HomeCard => HOME_CARDS.includes(id as HomeCard)) : [];
+  return [...new Set([...known, ...HOME_CARDS])];
+}

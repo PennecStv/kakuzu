@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../store/types';
 import { toCsv } from './csv';
 import {
-  expensesByCategory,
+  byCategory,
   foldSlices,
   groupByDay,
-  inMonth,
+  inPeriod,
   matchesQuery,
   monthlyTotals,
   niceTicks,
@@ -36,27 +36,32 @@ describe('totals', () => {
 
   it('filters a month', () => {
     const list = [tx({ date: '2026-10-31' }), tx({ date: '2026-11-01' })];
-    expect(inMonth(list, '2026-11')).toHaveLength(1);
+    expect(inPeriod(list, '2026-11')).toHaveLength(1);
+    expect(inPeriod(list, '2026')).toHaveLength(2);
+    expect(inPeriod(list, '2026-10-31')).toHaveLength(1);
   });
 });
 
-describe('expensesByCategory', () => {
-  it('sums per category, largest first, ignoring income', () => {
-    const slices = expensesByCategory([
-      tx({ categoryId: 'food', amount: 300 }),
-      tx({ categoryId: 'home', amount: 600 }),
-      tx({ categoryId: 'food', amount: 100 }),
-      tx({ kind: 'income', categoryId: 'salary', amount: 9999 }),
-    ]);
+describe('byCategory', () => {
+  const list = [
+    tx({ categoryId: 'food', amount: 300 }),
+    tx({ categoryId: 'home', amount: 600 }),
+    tx({ categoryId: 'food', amount: 100 }),
+    tx({ kind: 'income', categoryId: 'salary', amount: 9999 }),
+  ];
+
+  it('sums per category, largest first, keeping one kind', () => {
+    const slices = byCategory(list, 'expense');
     expect(slices.map((s) => [s.id, s.amount])).toEqual([
       ['home', 600],
       ['food', 400],
     ]);
     expect(slices[0]?.share).toBeCloseTo(0.6);
+    expect(byCategory(list, 'income')).toEqual([{ id: 'salary', amount: 9999, share: 1 }]);
   });
 
   it('returns nothing without expenses', () => {
-    expect(expensesByCategory([])).toEqual([]);
+    expect(byCategory([], 'expense')).toEqual([]);
   });
 });
 

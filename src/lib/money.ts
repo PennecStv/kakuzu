@@ -5,7 +5,7 @@
 export const SCALE = 100;
 
 /** About ten billion: far above any budget, far below the float precision limit. */
-const MAX_AMOUNT = 1e12;
+export const MAX_AMOUNT = 1e12;
 
 const formatters = new Map<string, Intl.NumberFormat>();
 

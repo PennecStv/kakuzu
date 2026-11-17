@@ -11,15 +11,17 @@ export interface Theme {
   name: string;
   /** Japanese name, in romaji. */
   reading: string;
+  /** The same name in Japanese script. */
+  kanji: string;
   /** UI accent: buttons, active tab, focus rings, income figures, the wordmark's K. */
   accent: string;
   scene: SceneSpec;
 }
 
 export const THEMES: Record<ThemeId, Theme> = {
-  koi: { id: 'koi', name: 'Carpes koï', reading: 'koi', accent: '#e8604a', scene: koi },
-  butterflies: { id: 'butterflies', name: 'Papillons', reading: 'chō', accent: '#5b9cf0', scene: butterflies },
-  herons: { id: 'herons', name: 'Hérons', reading: 'sagi', accent: '#9db8d6', scene: herons },
-  frogs: { id: 'frogs', name: 'Grenouilles', reading: 'kaeru', accent: '#6cc070', scene: frogs },
-  jellyfish: { id: 'jellyfish', name: 'Méduses', reading: 'kurage', accent: '#d36be0', scene: jellyfish },
+  koi: { id: 'koi', name: 'Carpes koï', reading: 'koi', kanji: '鯉', accent: '#e8604a', scene: koi },
+  butterflies: { id: 'butterflies', name: 'Papillons', reading: 'chō', kanji: '蝶', accent: '#5b9cf0', scene: butterflies },
+  herons: { id: 'herons', name: 'Hérons', reading: 'sagi', kanji: '鷺', accent: '#9db8d6', scene: herons },
+  frogs: { id: 'frogs', name: 'Grenouilles', reading: 'kaeru', kanji: '蛙', accent: '#6cc070', scene: frogs },
+  jellyfish: { id: 'jellyfish', name: 'Méduses', reading: 'kurage', kanji: '海月', accent: '#d36be0', scene: jellyfish },
 };
