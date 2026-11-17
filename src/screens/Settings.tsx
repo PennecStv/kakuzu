@@ -176,7 +176,9 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
             >
               <ThemeIcon theme={t.id} className="theme__icon" />
               <span className="theme__name">{t.name}</span>
-              <span className="theme__reading">{t.reading}</span>
+              <span className="theme__reading">
+                {t.reading} <span lang="ja">{t.kanji}</span>
+              </span>
             </button>
           ))}
         </div>

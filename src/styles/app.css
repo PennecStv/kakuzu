@@ -873,6 +873,10 @@
   color: var(--ink-3);
 }
 
+.theme__reading [lang='ja'] {
+  color: var(--ink-2);
+}
+
 /* ---------- home order ---------- */
 
 .order {
