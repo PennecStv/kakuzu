@@ -11,7 +11,7 @@ export interface Theme {
   name: string;
   /** Japanese name, in romaji. */
   reading: string;
-  /** UI accent: buttons, active tab, focus rings. */
+  /** UI accent: buttons, active tab, focus rings, income figures, the wordmark's K. */
   accent: string;
   scene: SceneSpec;
 }

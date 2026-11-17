@@ -30,19 +30,50 @@
 }
 
 .wordmark {
-  display: block;
-  width: 168px;
-  height: 32px;
-  /* Square pixels: no antialiasing on their edges. */
-  shape-rendering: crispEdges;
+  display: inline-flex;
+  align-items: flex-end;
 }
 
-.wordmark__ink {
-  fill: var(--ink);
+/* Seven lines of glyphs, a third taller than the lowercase ascenders: a drop cap. */
+.wordmark__k {
+  margin: 0;
+  font: 700 10.5px/8.1px var(--font);
+  color: var(--accent);
 }
 
-.wordmark__shadow {
-  fill: color-mix(in srgb, var(--accent) 50%, var(--bg));
+.wordmark__rest {
+  position: relative;
+  isolation: isolate;
+  margin-left: 4px;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 0.74;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+/* A stroke of the accent behind the foot of the letters. */
+.wordmark__rest::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -3px;
+  right: -2px;
+  bottom: -3px;
+  height: 0.2em;
+  background: var(--accent);
+}
+
+/* 乙, as tall as the ascenders and as heavy as the letters around it. */
+.wordmark__otsu {
+  width: 0.56em;
+  height: 0.72em;
+  margin: 0 0.03em;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 20;
 }
 
 /* ---------- surfaces ---------- */

@@ -2,8 +2,8 @@
 
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.svg" />
-    <img src="docs/wordmark-light.svg" width="336" alt="Kakuzu" />
+    <source media="(prefers-color-scheme: dark)" srcset="docs/wordmark-dark.png" />
+    <img src="docs/wordmark-light.png" width="300" alt="Kakuzu" />
   </picture>
 </h1>
 
