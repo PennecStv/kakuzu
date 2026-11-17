@@ -121,7 +121,13 @@
   color: var(--income);
 }
 
-/* ---------- month switcher ---------- */
+/* ---------- period switcher ---------- */
+
+.period {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .month {
   display: flex;
@@ -1294,3 +1300,4 @@
     transition: none !important;
   }
 }
+

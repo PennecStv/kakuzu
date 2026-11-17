@@ -1,5 +1,5 @@
 import type { Category, Transaction } from '../store/types';
-import { monthOf, shiftMonth, type DayKey, type MonthKey } from './dates';
+import { monthOf, shiftMonth, type DayKey, type MonthKey, type Period } from './dates';
 
 export interface Totals {
   income: number;
@@ -7,8 +7,8 @@ export interface Totals {
   balance: number;
 }
 
-export function inMonth(transactions: Transaction[], month: MonthKey): Transaction[] {
-  return transactions.filter((t) => monthOf(t.date) === month);
+export function inPeriod(transactions: Transaction[], period: Period): Transaction[] {
+  return transactions.filter((t) => t.date.startsWith(period));
 }
 
 export function totals(transactions: Transaction[]): Totals {

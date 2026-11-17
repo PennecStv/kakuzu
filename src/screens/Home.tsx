@@ -1,43 +1,46 @@
 import { type CSSProperties, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
 import { CategoryIcon } from '../components/CategoryIcon';
-import { MonthSwitcher } from '../components/MonthSwitcher';
+import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { TrendChart } from '../components/TrendChart';
 import { TransactionRow } from '../components/TransactionRow';
-import { type MonthKey, monthLabel } from '../lib/dates';
+import { type Period, type Unit, lastMonth, unitOf } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
-import { type Slice, expensesByCategory, foldSlices, groupByDay, inMonth, monthlyTotals, sliceKey, totals } from '../lib/stats';
+import { type Slice, expensesByCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
 import { categoryColor, useStore } from '../store/store';
 import type { Transaction } from '../store/types';
 
 interface Props {
-  month: MonthKey;
-  onMonth: (m: MonthKey) => void;
+  period: Period;
+  onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
   onAdd: () => void;
   onSeeAll: () => void;
 }
 
-export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
+const BALANCE: Record<Unit, string> = { day: 'Solde du jour', month: 'Solde du mois', year: 'Solde de l’année' };
+
+export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
   const transactions = useStore((s) => s.transactions);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [active, setActive] = useState<string | null>(null);
+  const unit = unitOf(period);
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-  const monthly = useMemo(() => inMonth(transactions, month), [transactions, month]);
-  const trend = useMemo(() => monthlyTotals(transactions, month, 6), [transactions, month]);
+  const scoped = useMemo(() => inPeriod(transactions, period), [transactions, period]);
+  const trend = useMemo(() => monthlyTotals(transactions, lastMonth(period), 6), [transactions, period]);
   const { sum, breakdown, slices, recent } = useMemo(() => {
-    const breakdown = expensesByCategory(monthly);
+    const breakdown = expensesByCategory(scoped);
     return {
-      sum: totals(monthly),
+      sum: totals(scoped),
       breakdown,
       slices: foldSlices(breakdown),
-      recent: groupByDay(monthly)
+      recent: groupByDay(scoped)
         .flatMap((g) => g.transactions)
         .slice(0, 5),
     };
-  }, [monthly]);
+  }, [scoped]);
 
   const colorOf = (s: Slice) => categoryColor(s.id ? byId.get(s.id) : undefined);
   const labelOf = (s: Slice) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres');
@@ -45,16 +48,16 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
 
   return (
     <>
-      <MonthSwitcher
-        month={month}
-        onChange={(m) => {
+      <PeriodSwitcher
+        period={period}
+        onChange={(p) => {
           setActive(null);
-          onMonth(m);
+          onPeriod(p);
         }}
       />
 
-      <section className="card balance" aria-label="Solde du mois">
-        <p className="label">Solde du mois</p>
+      <section className="card balance" aria-label={BALANCE[unit]}>
+        <p className="label">{BALANCE[unit]}</p>
         <p className={`balance__value${sum.balance < 0 ? ' is-negative' : ''}`}>{formatSigned(sum.balance, currency)}</p>
         <dl className="balance__split">
           <div>
@@ -75,7 +78,7 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
         {breakdown.length === 0 ? (
           <div className="empty">
             <pre className="empty__art" aria-hidden="true">{'   ><(((°>\n ~  ~   ~  ~'}</pre>
-            <p>Aucune dépense en {monthLabel(month)}.</p>
+            <p>Aucune dépense sur cette période.</p>
             <button type="button" className="button button--primary" onClick={onAdd}>
               Ajouter une dépense
             </button>
@@ -96,7 +99,8 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
                 const category = s.id ? byId.get(s.id) : undefined;
                 // Rows past the fifth are the ones folded into the "Autres" segment.
                 const key = i < slices.length - 1 || slices.length === breakdown.length ? sliceKey(s) : 'other';
-                const budget = category?.budget;
+                // Budgets are monthly: against a day or a year they would mislead.
+                const budget = unit === 'month' ? category?.budget : undefined;
                 return (
                   <li key={s.id}>
                     <button

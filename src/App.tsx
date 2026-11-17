@@ -31,7 +31,7 @@ export function App() {
   const restoreTransaction = useStore((s) => s.restoreTransaction);
 
   const [tab, setTab] = useState<Tab>('home');
-  const [month, setMonth] = useState(() => monthOf(today()));
+  const [period, setPeriod] = useState(() => monthOf(today()));
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -69,15 +69,15 @@ export function App() {
         <main className="screen">
           {tab === 'home' && (
             <Home
-              month={month}
-              onMonth={setMonth}
+              period={period}
+              onPeriod={setPeriod}
               onOpen={openTransaction}
               onAdd={() => openTransaction()}
               onSeeAll={() => go('history')}
             />
           )}
-          {tab === 'history' && <History month={month} onMonth={setMonth} onOpen={openTransaction} />}
-          {tab === 'categories' && <Categories month={month} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
+          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} />}
+          {tab === 'categories' && <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
           {tab === 'settings' && <Settings notify={notify} />}
         </main>
       </div>
@@ -102,7 +102,8 @@ export function App() {
               setToast({ id: Date.now(), text: quip, figure: `${sign}${formatMoney(t.amount, currency)}`, tone: t.kind });
             }
             setTxSheet(null);
-            setMonth(monthOf(t.date));
+            // Follow the entry to its period, in the unit already picked.
+            setPeriod((p) => t.date.slice(0, p.length));
           }}
         />
       </Sheet>

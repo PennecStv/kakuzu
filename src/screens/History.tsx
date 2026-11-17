@@ -1,20 +1,20 @@
 import { useMemo, useState } from 'react';
-import { MonthSwitcher } from '../components/MonthSwitcher';
+import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
-import { type MonthKey, dayLabel, monthLabel } from '../lib/dates';
+import { type Period, dayLabel } from '../lib/dates';
 import { formatSigned } from '../lib/money';
-import { groupByDay, inMonth, matchesQuery } from '../lib/stats';
+import { groupByDay, inPeriod, matchesQuery } from '../lib/stats';
 import { useStore } from '../store/store';
 import type { Kind, Transaction } from '../store/types';
 
 interface Props {
-  month: MonthKey;
-  onMonth: (m: MonthKey) => void;
+  period: Period;
+  onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
 }
 
-export function History({ month, onMonth, onOpen }: Props) {
+export function History({ period, onPeriod, onOpen }: Props) {
   const transactions = useStore((s) => s.transactions);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
@@ -25,16 +25,16 @@ export function History({ month, onMonth, onOpen }: Props) {
   const groups = useMemo(
     () =>
       groupByDay(
-        inMonth(transactions, month).filter(
+        inPeriod(transactions, period).filter(
           (t) => (kind === 'all' || t.kind === kind) && matchesQuery(t, byId.get(t.categoryId), query),
         ),
       ),
-    [transactions, month, kind, query, byId],
+    [transactions, period, kind, query, byId],
   );
 
   return (
     <>
-      <MonthSwitcher month={month} onChange={onMonth} />
+      <PeriodSwitcher period={period} onChange={onPeriod} />
 
       <div className="filters">
         <label className="search">
@@ -60,7 +60,7 @@ export function History({ month, onMonth, onOpen }: Props) {
 
       {groups.length === 0 ? (
         <p className="card empty">
-          {query || kind !== 'all' ? 'Aucune opération ne correspond.' : `Aucune opération en ${monthLabel(month)}.`}
+          {query || kind !== 'all' ? 'Aucune opération ne correspond.' : 'Aucune opération sur cette période.'}
         </p>
       ) : (
         groups.map((g) => (

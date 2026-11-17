@@ -5,7 +5,7 @@ import {
   expensesByCategory,
   foldSlices,
   groupByDay,
-  inMonth,
+  inPeriod,
   matchesQuery,
   monthlyTotals,
   niceTicks,
@@ -36,7 +36,9 @@ describe('totals', () => {
 
   it('filters a month', () => {
     const list = [tx({ date: '2026-10-31' }), tx({ date: '2026-11-01' })];
-    expect(inMonth(list, '2026-11')).toHaveLength(1);
+    expect(inPeriod(list, '2026-11')).toHaveLength(1);
+    expect(inPeriod(list, '2026')).toHaveLength(2);
+    expect(inPeriod(list, '2026-10-31')).toHaveLength(1);
   });
 });
 
