@@ -1,7 +1,9 @@
 import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
 import { THEMES } from '../ascii/themes';
+import { Dropdown } from '../components/Dropdown';
 import { ThemeIcon } from '../components/ThemeIcon';
 import { toCsv } from '../lib/csv';
+import { currencySymbol } from '../lib/money';
 import { today } from '../lib/dates';
 import { type Backup, readBackup } from '../store/backup';
 import { CURRENCIES } from '../store/defaults';
@@ -87,18 +89,13 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         <h2 id="currency-title" className="card__title">
           Devise
         </h2>
-        <select
-          className="select"
-          aria-labelledby="currency-title"
+        <Dropdown
+          labelledBy="currency-title"
           value={settings.currency}
-          onChange={(e) => setSettings({ currency: e.target.value })}
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          // The franc's symbol is its code: no need to print it twice.
+          options={CURRENCIES.map((c) => ({ value: c, label: c, detail: currencySymbol(c) === c ? undefined : currencySymbol(c) }))}
+          onChange={(currency) => setSettings({ currency })}
+        />
         <p className="hint">Change l’affichage seulement, les montants ne sont pas convertis.</p>
       </section>
 
