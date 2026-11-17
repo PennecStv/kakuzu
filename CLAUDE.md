@@ -10,6 +10,7 @@ npm run build      # type check + production build in dist/
 npm run preview    # serve the production build
 npm run lint
 npm test           # vitest, logic only
+npm run build:android  # build without the service worker, synced into android/ (Capacitor)
 ```
 
 ## Stack
@@ -18,6 +19,7 @@ npm test           # vitest, logic only
 - State: one zustand store persisted to `localStorage` (`src/store/`). Amounts are integer hundredths whatever the currency (`SCALE` in `src/lib/money.ts`), so switching currency never rescales them. Dates are `YYYY-MM-DD` strings. Never store floats for money.
 - PWA through `vite-plugin-pwa` (auto update, offline precache).
 - Background: a hand-written ASCII renderer on a single `<canvas>` (`src/ascii/`). No dependency.
+- Android: Capacitor 8 wraps `dist/` in `android/`, which is committed. The `android` Vite mode drops the service worker: the APK ships its files. `.github/workflows/apk.yml` builds the signed APK on each `vX.Y.Z` tag: versionName is the tag, versionCode is major × 10000 + minor × 100 + patch (minor and patch stay under 100), the key comes from the repo secrets. Never commit a keystore. Launcher icons and splash screens in `android/app/src/main/res` were rendered from `public/icon.svg` with sharp: redo them if the icon changes. Gradle 8.14 needs JDK 21.
 
 ## Layout
 

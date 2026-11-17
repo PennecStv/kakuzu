@@ -76,12 +76,27 @@ npm run build        # vérification des types puis build dans dist/
 npm run preview      # sert le build de production
 npm run lint
 npm test             # tests de la logique (montants, dates, stats, CSV, import)
+npm run build:android  # build sans service worker, copié dans le projet Android (android/)
 ```
 
-Pour l'installer sur un téléphone, il faut servir le build en HTTPS (Vercel, Netlify ou GitHub Pages suffisent), puis :
+Pour l'installer sur un téléphone :
 
-- **Android (Chrome)** : menu ⋮ → « Installer l'application ».
-- **iPhone (Safari)** : bouton Partager → « Sur l'écran d'accueil ».
+- **Android (APK)** : télécharger `kakuzu-X.Y.Z.apk` dans la dernière [release](https://github.com/PennecStv/kakuzu/releases) et l'ouvrir sur le téléphone (Android demande d'autoriser l'installation depuis cette source).
+- **Android (Chrome)**, une fois le build servi en HTTPS (Vercel, Netlify ou GitHub Pages) : menu ⋮ → « Installer l'application ».
+- **iPhone (Safari)**, même chose : bouton Partager → « Sur l'écran d'accueil ».
+
+### Publier un APK
+
+L'APK embarque l'appli avec [Capacitor](https://capacitorjs.com) : elle marche hors ligne sans rien héberger. Chaque tag `vX.Y.Z` poussé lance le workflow `APK`, qui construit un APK signé et l'attache à la release du tag. La version de l'appli suit celle du tag.
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+Le workflow lit deux secrets du dépôt (Settings → Secrets and variables → Actions) : `ANDROID_KEYSTORE_BASE64`, la clé de signature encodée en base64, et `ANDROID_KEYSTORE_PASSWORD`, son mot de passe. Gardez une copie de la clé : sans elle, un nouvel APK ne s'installe plus par-dessus l'ancien.
+
+Pour construire en local : `npm run build:android`, puis ouvrir `android/` dans Android Studio, avec un JDK 21 (Gradle 8.14 refuse le JDK 25 fourni par Android Studio).
 
 ## 五 · Comment c'est construit
 
