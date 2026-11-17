@@ -44,9 +44,10 @@ src/
 ### Design
 
 - Dark only: near-black navy surfaces, the ASCII scene stays behind and dimmed so text keeps a 4.5:1 contrast.
-- Monospace everywhere (Geist Mono). The header title is the pixel wordmark (`components/Wordmark.tsx`).
+- Monospace everywhere (Geist Mono). The header title is the wordmark (`components/Wordmark.tsx`): a still K in ASCII art in the accent, then "aku乙u" in heavy Geist Mono, the z swapped for the kanji 乙 (drawn as SVG so its weight matches on every phone), over a stroke of the accent behind the foot of the letters. `docs/wordmark-*.png` are its static copies for the README.
 - Icons are Lucide line icons. Lucide has none of the theme animals, so `components/ThemeIcon.tsx` draws them on its 24 px grid with its 2 px stroke; a new icon follows the same grid. No kanji as icons, no emoji in the UI.
-- One accent color per animal theme, taken from `src/ascii/themes.ts`. Category colors come from the fixed categorical palette in `tokens.css` and follow the category, never its rank.
+- Each animal theme in `src/ascii/themes.ts` sets the accent: buttons, income figures, the income line, the wordmark's K. Category colors do not follow the theme (shades of one hue were too hard to tell apart): a category is a slot of the validated palette in `tokens.css` or a `#rrggbb` the user picked (four extra presets or the system picker), and the color follows the category, never its rank. Theme changes happen in Réglages only.
+- No native `<select>`: pickers use `components/Dropdown.tsx`, which keeps the app's look on Android.
 - No gradients on text, no glow on everything, no purple-to-pink hero, no card-in-card-in-card. Hairline borders, flat fills, generous spacing.
 - Touch targets ≥ 44 px. Everything reachable with one thumb: primary actions at the bottom.
 - Respect `prefers-reduced-motion`: the scene renders still frames.
@@ -55,10 +56,12 @@ src/
 
 - Short, plain French. Say what the button does ("Ajouter", "Supprimer"), not marketing ("Libérez votre potentiel financier").
 - No exclamation marks in the UI, no filler like "Oups !" or "Super !".
+- The one exception to plain copy: the floating message after an entry (`src/lib/quips.ts`), green for income, red for expenses, owner-picked lines in the Kakuzu-money meme tone. Each line stays under 36 characters.
 
 ### Charts
 
 - Expense split is a donut (the owner asked for a "camembert") with at most 6 segments: the tail folds into "Autres". 2 px surface gap between segments.
+- Income and expenses over six months is a line chart on one axis: income in the accent with a 10 % wash, expenses in ink, a readout above it for the month under the finger.
 - The donut never stands alone: it sits above a list giving each category's name, amount and share, so color is never the only key.
 
 ### Git
