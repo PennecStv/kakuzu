@@ -371,6 +371,20 @@
   list-style: none;
 }
 
+.split--scroll {
+  max-height: 312px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent);
+}
+
+.split--scroll.is-end {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .split__row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;

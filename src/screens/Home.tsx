@@ -1,5 +1,6 @@
 import { type CSSProperties, Fragment, type ReactNode, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
+import { FadeList } from '../components/FadeList';
 import { GoalList } from '../components/GoalList';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
@@ -111,7 +112,8 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
               center={{ value: money(kind === 'expense' ? sum.expense : sum.income), caption: SPLIT[kind].caption }}
               activeValue={(s) => money(s.amount)}
             />
-            <ul className="split">
+            {/* Past the six donut segments the list scrolls instead of stretching the page. */}
+            <FadeList key={`${kind}-${period}`} className={breakdown.length > 6 ? 'split split--scroll' : 'split'}>
               {breakdown.map((s, i) => {
                 const category = s.id ? byId.get(s.id) : undefined;
                 // Rows past the fifth are the ones folded into the "Autres" segment.
@@ -148,7 +150,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
                   </li>
                 );
               })}
-            </ul>
+            </FadeList>
           </>
         )}
       </section>
