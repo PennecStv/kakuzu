@@ -16,4 +16,4 @@ export const DEFAULT_CATEGORIES: Category[] = [
 ];
 
 
-export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY'];
+export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'MGA'];
