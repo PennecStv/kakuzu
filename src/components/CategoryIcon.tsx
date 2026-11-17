@@ -6,6 +6,7 @@ import {
   Utensils, Wifi, Wine, Wrench, Zap,
 } from 'lucide-react';
 import { ICONS, type IconId } from '../store/icons';
+import { categoryColor } from '../store/store';
 import type { Category } from '../store/types';
 
 const SHAPES: Record<IconId, [LucideIcon, string]> = {
@@ -55,7 +56,7 @@ const SHAPES: Record<IconId, [LucideIcon, string]> = {
 
 /** The category's icon on a tile of its color. */
 export function CategoryIcon({ category }: { category: Category | undefined }) {
-  const tile = category ? `var(--cat-${category.color})` : 'var(--cat-other)';
+  const tile = categoryColor(category);
   const [Shape] = SHAPES[category?.icon ?? 'tag'];
   return (
     <span className="cat-icon" style={{ '--tile': tile } as CSSProperties} aria-hidden="true">

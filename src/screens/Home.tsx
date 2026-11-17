@@ -7,7 +7,7 @@ import { TransactionRow } from '../components/TransactionRow';
 import { type MonthKey, monthLabel } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
 import { type Slice, expensesByCategory, foldSlices, groupByDay, inMonth, monthlyTotals, sliceKey, totals } from '../lib/stats';
-import { useStore } from '../store/store';
+import { categoryColor, useStore } from '../store/store';
 import type { Transaction } from '../store/types';
 
 interface Props {
@@ -39,7 +39,7 @@ export function Home({ month, onMonth, onOpen, onAdd, onSeeAll }: Props) {
     };
   }, [monthly]);
 
-  const colorOf = (s: Slice) => (s.id ? `var(--cat-${byId.get(s.id)?.color ?? 'other'})` : 'var(--cat-other)');
+  const colorOf = (s: Slice) => categoryColor(s.id ? byId.get(s.id) : undefined);
   const labelOf = (s: Slice) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres');
   const money = (minor: number) => formatMoney(minor, currency);
 

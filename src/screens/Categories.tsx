@@ -4,7 +4,7 @@ import { Segmented } from '../components/Segmented';
 import { type MonthKey, monthLabel } from '../lib/dates';
 import { formatMoney } from '../lib/money';
 import { inMonth, sumByCategory } from '../lib/stats';
-import { categoriesOf, useStore } from '../store/store';
+import { categoriesOf, categoryColor, useStore } from '../store/store';
 import type { Category, Kind } from '../store/types';
 
 interface Props {
@@ -43,7 +43,7 @@ export function Categories({ month, onEdit }: Props) {
               <button
                 type="button"
                 className="cat"
-                style={{ '--tile': `var(--cat-${c.color})` } as CSSProperties}
+                style={{ '--tile': categoryColor(c) } as CSSProperties}
                 onClick={() => onEdit(kind, c)}
               >
                 <CategoryIcon category={c} />

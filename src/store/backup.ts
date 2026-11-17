@@ -14,6 +14,7 @@ export interface Backup {
 const KINDS: Kind[] = ['expense', 'income'];
 const THEMES: ThemeId[] = ['koi', 'butterflies', 'herons', 'frogs', 'jellyfish'];
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const HEX = /^#[0-9a-f]{6}$/i;
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 const isMinor = (v: unknown): v is number => Number.isInteger(v) && (v as number) > 0;
@@ -22,14 +23,16 @@ function readCategory(v: unknown): Category | null {
   if (!isObject(v)) return null;
   const { id, kind, name, icon, glyph, color, budget } = v;
   if (typeof id !== 'string' || typeof name !== 'string') return null;
-  if (!KINDS.includes(kind as Kind) || !Number.isInteger(color)) return null;
+  // A theme slot, or a fixed color: anything else could inject CSS through the style attribute.
+  const fixed = typeof color === 'string' && HEX.test(color);
+  if (!KINDS.includes(kind as Kind) || !(Number.isInteger(color) || fixed)) return null;
   return {
     id,
     kind: kind as Kind,
     name,
     // Version 1 files carry a kanji instead.
     icon: isIconId(icon) ? icon : iconFromKanji(typeof glyph === 'string' ? glyph : ''),
-    color: Math.abs(color as number) % 8,
+    color: fixed ? color.toLowerCase() : Math.abs(color as number) % 8,
     ...(isMinor(budget) ? { budget } : {}),
   };
 }

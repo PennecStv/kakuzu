@@ -27,6 +27,15 @@ describe('readBackup', () => {
     expect(readBackup(JSON.stringify(v1), fallback).categories[0]?.icon).toBe('basket');
   });
 
+  it('keeps fixed category colors and drops malformed ones', () => {
+    const categories = [
+      { ...valid.categories[0], color: '#1BB3BA' },
+      { ...valid.categories[0], id: 'bad', color: 'red;background:url(x)' },
+    ];
+    const backup = readBackup(JSON.stringify({ ...valid, categories }), fallback);
+    expect(backup.categories.map((c) => c.color)).toEqual(['#1bb3ba']);
+  });
+
   it('rejects files from elsewhere', () => {
     expect(() => readBackup('not json', fallback)).toThrow();
     expect(() => readBackup(JSON.stringify({ ...valid, app: 'other' }), fallback)).toThrow();

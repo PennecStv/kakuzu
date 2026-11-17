@@ -947,7 +947,8 @@
   gap: 10px;
 }
 
-.swatches button {
+.swatches button,
+.swatches__custom {
   width: 36px;
   height: 36px;
   border: 2px solid transparent;
@@ -955,8 +956,41 @@
   outline-offset: 2px;
 }
 
-.swatches button.is-on {
+.swatches button.is-on,
+.swatches__custom.is-on {
   border-color: var(--ink);
+}
+
+/* Any other color: the system color picker, opened by tapping the pipette. */
+.swatches__custom {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-color: var(--hairline-strong);
+  background: var(--surface-raised);
+  color: var(--ink-2);
+}
+
+.swatches__custom svg {
+  width: 16px;
+  height: 16px;
+}
+
+.swatches__custom.is-on svg {
+  color: var(--bg);
+}
+
+.swatches__custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatches__custom:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
 }
 
 .confirm p {

@@ -26,7 +26,7 @@
   --gain: #5cc28a;
   --loss: var(--danger);
 
-  /* categorical palette, validated against --surface-solid (dataviz skill, dark mode) */
+  /* categorical palette, the same in every theme, validated against --surface-solid (dataviz skill, dark mode) */
   --cat-0: #3987e5;
   --cat-1: #d95926;
   --cat-2: #199e70;

@@ -10,8 +10,8 @@ export interface Category {
   kind: Kind;
   name: string;
   icon: IconId;
-  /** Slot in the categorical palette, 0 to 7. */
-  color: number;
+  /** Slot 0 to 7 of the categorical palette (`--cat-N`), or any "#rrggbb" picked by the user. */
+  color: number | string;
   /** Monthly limit in minor units, expenses only. */
   budget?: number;
 }

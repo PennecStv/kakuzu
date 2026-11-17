@@ -86,6 +86,12 @@ export const useStore = create<State & Actions>()(
   ),
 );
 
+/** CSS color of a category: its theme slot, or the fixed color picked for it. */
+export function categoryColor(category: Category | undefined): string {
+  if (!category) return 'var(--cat-other)';
+  return typeof category.color === 'number' ? `var(--cat-${category.color})` : category.color;
+}
+
 export function categoriesOf(categories: Category[], kind: Kind): Category[] {
   return categories.filter((c) => c.kind === kind);
 }
