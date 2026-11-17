@@ -873,6 +873,31 @@
   color: var(--ink-3);
 }
 
+/* ---------- home order ---------- */
+
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order__row span {
+  flex: 1;
+}
+
+.order .icon-button:disabled {
+  opacity: 0.35;
+}
+
 .about {
   margin: 8px 0 0;
   font-size: 12px;

@@ -1,4 +1,4 @@
-import { CURRENCIES } from './defaults';
+import { CURRENCIES, homeOrder } from './defaults';
 import { iconFromKanji, isIconId } from './icons';
 import type { Category, Goal, Kind, Settings, ThemeId, Transaction } from './types';
 
@@ -88,6 +88,7 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     // An unknown code would make every money format throw.
     currency: CURRENCIES.includes(s.currency as string) ? (s.currency as string) : fallback.currency,
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
+    home: Array.isArray(s.home) ? homeOrder(s.home) : fallback.home,
   };
   return { app: 'kakuzu', version: 2, categories, transactions, goals, settings };
 }

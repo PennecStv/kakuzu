@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useState } from 'react';
+import { type CSSProperties, Fragment, type ReactNode, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
 import { GoalList } from '../components/GoalList';
 import { CategoryIcon } from '../components/CategoryIcon';
@@ -9,8 +9,9 @@ import { TransactionRow } from '../components/TransactionRow';
 import { type Period, type Unit, lastMonth, unitOf } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
 import { type Slice, byCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
+import { homeOrder } from '../store/defaults';
 import { categoryColor, useStore } from '../store/store';
-import type { Goal, Kind, Transaction } from '../store/types';
+import type { Goal, HomeCard, Kind, Transaction } from '../store/types';
 
 interface Props {
   period: Period;
@@ -31,6 +32,7 @@ const SPLIT: Record<Kind, { caption: string; empty: string; add: string }> = {
 export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Props) {
   const transactions = useStore((s) => s.transactions);
   const goals = useStore((s) => s.goals);
+  const order = useStore((s) => s.settings.home);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [active, setActive] = useState<string | null>(null);
@@ -56,16 +58,8 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
   const labelOf = (s: Slice) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres');
   const money = (minor: number) => formatMoney(minor, currency);
 
-  return (
-    <>
-      <PeriodSwitcher
-        period={period}
-        onChange={(p) => {
-          setActive(null);
-          onPeriod(p);
-        }}
-      />
-
+  const cards: Record<HomeCard, ReactNode> = {
+    balance: (
       <section className="card balance" aria-label={BALANCE[unit]}>
         <p className="label">{BALANCE[unit]}</p>
         <p className={`balance__value${sum.balance < 0 ? ' is-negative' : ''}`}>{formatSigned(sum.balance, currency)}</p>
@@ -80,7 +74,8 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
           </div>
         </dl>
       </section>
-
+    ),
+    split: (
       <section className="card" aria-labelledby="split-title">
         <h2 id="split-title" className="card__title">
           Par catégorie
@@ -157,7 +152,8 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
           </>
         )}
       </section>
-
+    ),
+    goals: (
       <section className="card" aria-labelledby="goals-title">
         <div className="card__head">
           <h2 id="goals-title" className="card__title">
@@ -173,26 +169,39 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
           <p className="hint">Un achat, une épargne : fixez un montant à atteindre et versez au fil du temps.</p>
         )}
       </section>
+    ),
+    trend: trend.some((r) => r.income || r.expense) ? <TrendChart rows={trend} currency={currency} /> : null,
+    recent: recent.length > 0 ? (
+      <section className="card" aria-labelledby="recent-title">
+        <div className="card__head">
+          <h2 id="recent-title" className="card__title">
+            Dernières opérations
+          </h2>
+          <button type="button" className="link" onClick={onSeeAll}>
+            Tout voir
+          </button>
+        </div>
+        <ul className="tx-list">
+          {recent.map((t) => (
+            <TransactionRow key={t.id} transaction={t} category={byId.get(t.categoryId)} currency={currency} onOpen={onOpen} />
+          ))}
+        </ul>
+      </section>
+    ) : null,
+  };
 
-      {trend.some((r) => r.income || r.expense) && <TrendChart rows={trend} currency={currency} />}
-
-      {recent.length > 0 && (
-        <section className="card" aria-labelledby="recent-title">
-          <div className="card__head">
-            <h2 id="recent-title" className="card__title">
-              Dernières opérations
-            </h2>
-            <button type="button" className="link" onClick={onSeeAll}>
-              Tout voir
-            </button>
-          </div>
-          <ul className="tx-list">
-            {recent.map((t) => (
-              <TransactionRow key={t.id} transaction={t} category={byId.get(t.categoryId)} currency={currency} onOpen={onOpen} />
-            ))}
-          </ul>
-        </section>
-      )}
+  return (
+    <>
+      <PeriodSwitcher
+        period={period}
+        onChange={(p) => {
+          setActive(null);
+          onPeriod(p);
+        }}
+      />
+      {homeOrder(order).map((id) => (
+        <Fragment key={id}>{cards[id]}</Fragment>
+      ))}
     </>
   );
 }

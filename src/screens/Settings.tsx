@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
 import { THEMES } from '../ascii/themes';
 import { Dropdown } from '../components/Dropdown';
@@ -8,9 +8,10 @@ import { currencySymbol } from '../lib/money';
 import { today } from '../lib/dates';
 import { readXlsx } from '../lib/xlsx';
 import { type Backup, readBackup } from '../store/backup';
-import { CURRENCIES } from '../store/defaults';
+import { CURRENCIES, homeOrder } from '../store/defaults';
 import { type SheetImport, readSheets } from '../store/sheet';
 import { useStore } from '../store/store';
+import type { HomeCard } from '../store/types';
 
 function download(name: string, type: string, content: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -23,6 +24,14 @@ function download(name: string, type: string, content: string) {
   // Safari and Firefox read the URL after the click returns: revoke it later.
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
+
+const CARD_NAMES: Record<HomeCard, string> = {
+  balance: 'Solde',
+  split: 'Par catégorie',
+  goals: 'Objectifs',
+  trend: 'Évolution sur 6 mois',
+  recent: 'Dernières opérations',
+};
 
 const count = (n: number, word: string) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
@@ -94,6 +103,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const file = useRef<HTMLInputElement>(null);
   const sheetFile = useRef<HTMLInputElement>(null);
   const [format, setFormat] = useState(false);
+  const [ordering, setOrdering] = useState(false);
   const [pendingSheet, setPendingSheet] = useState<SheetImport | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
@@ -130,6 +140,14 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Import impossible.');
     }
+  };
+
+  const order = homeOrder(settings.home);
+  const moveCard = (from: number, to: number) => {
+    const next = [...order];
+    const [card] = next.splice(from, 1);
+    if (card) next.splice(to, 0, card);
+    setSettings({ home: next });
   };
 
   const sheetSummary = (p: SheetImport) => {
@@ -183,6 +201,51 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
           onChange={(currency) => setSettings({ currency })}
         />
         <p className="hint">Change l’affichage seulement, les montants ne sont pas convertis.</p>
+      </section>
+
+      <section className="card" aria-labelledby="home-title">
+        <h2 id="home-title" className="card__title">
+          Accueil
+        </h2>
+        <div className={`dropdown${ordering ? ' is-open' : ''}`}>
+          <button
+            type="button"
+            className="dropdown__button"
+            aria-expanded={ordering}
+            aria-controls="home-order"
+            onClick={() => setOrdering(!ordering)}
+          >
+            <span>Ordre des cartes</span>
+            <ChevronDown aria-hidden="true" />
+          </button>
+        </div>
+        {ordering && (
+          <ol id="home-order" className="order">
+            {order.map((card, i) => (
+              <li key={card} className="order__row">
+                <span>{CARD_NAMES[card]}</span>
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label={`Monter ${CARD_NAMES[card]}`}
+                  disabled={i === 0}
+                  onClick={() => moveCard(i, i - 1)}
+                >
+                  <ChevronUp aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label={`Descendre ${CARD_NAMES[card]}`}
+                  disabled={i === order.length - 1}
+                  onClick={() => moveCard(i, i + 1)}
+                >
+                  <ChevronDown aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       <section className="card" aria-labelledby="data-title">

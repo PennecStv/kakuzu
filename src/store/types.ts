@@ -37,8 +37,12 @@ export interface Goal {
   saved: number;
 }
 
+export type HomeCard = 'balance' | 'split' | 'goals' | 'trend' | 'recent';
+
 export interface Settings {
   theme: ThemeId;
   currency: string;
   motion: boolean;
+  /** Order of the home cards. Absent until the user changes it: read it through homeOrder. */
+  home?: HomeCard[];
 }
