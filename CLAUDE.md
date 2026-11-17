@@ -29,7 +29,7 @@ src/
   components/   UI pieces (sheet, donut, nav, forms)
   screens/      one file per tab
   store/        zustand store, types, default categories, migrations
-  lib/          pure functions (money, dates, stats, csv) with tests next to them
+  lib/          pure functions (money, dates, stats, csv, xlsx reader) with tests next to them
   styles/       tokens.css (colors, spacing, type) and global rules
 ```
 
@@ -62,7 +62,7 @@ src/
 
 ### Charts
 
-- Expense split is a donut (the owner asked for a "camembert") with at most 6 segments: the tail folds into "Autres". 2 px surface gap between segments.
+- The split by category is a donut (the owner asked for a "camembert"), expenses or income, with at most 6 segments: the tail folds into "Autres". 2 px surface gap between segments.
 - Income and expenses over six months is a line chart on one axis: income in the accent with a 10 % wash, expenses in ink, a readout above it for the month under the finger.
 - The donut never stands alone: it sits above a list giving each category's name, amount and share, so color is never the only key.
 
