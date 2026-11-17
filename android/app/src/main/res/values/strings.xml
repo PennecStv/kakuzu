@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kakuzu</string>
+    <string name="title_activity_main">Kakuzu</string>
+    <string name="package_name">io.github.pennecstv.kakuzu</string>
+    <string name="custom_url_scheme">io.github.pennecstv.kakuzu</string>
+</resources>

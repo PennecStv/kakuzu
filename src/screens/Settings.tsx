@@ -1,0 +1,180 @@
+import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
+import { THEMES } from '../ascii/themes';
+import { Dropdown } from '../components/Dropdown';
+import { ThemeIcon } from '../components/ThemeIcon';
+import { toCsv } from '../lib/csv';
+import { currencySymbol } from '../lib/money';
+import { today } from '../lib/dates';
+import { type Backup, readBackup } from '../store/backup';
+import { CURRENCIES } from '../store/defaults';
+import { useStore } from '../store/store';
+
+function download(name: string, type: string, content: string) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  // Safari and Firefox read the URL after the click returns: revoke it later.
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+export function Settings({ notify }: { notify: (text: string) => void }) {
+  const settings = useStore((s) => s.settings);
+  const setSettings = useStore((s) => s.setSettings);
+  const importBackup = useStore((s) => s.importBackup);
+  const reset = useStore((s) => s.reset);
+  const file = useRef<HTMLInputElement>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
+
+  const exportJson = () => {
+    const { categories, transactions } = useStore.getState();
+    const backup: Backup = { app: 'kakuzu', version: 2, exportedAt: new Date().toISOString(), categories, transactions, settings };
+    download(`kakuzu-${today()}.json`, 'application/json', JSON.stringify(backup, null, 2));
+  };
+
+  const exportCsv = () => {
+    const { categories, transactions } = useStore.getState();
+    // The BOM makes Excel read the file as UTF-8.
+    download(`kakuzu-${today()}.csv`, 'text/csv;charset=utf-8', `\ufeff${toCsv(transactions, categories, settings.currency)}`);
+  };
+
+  const importJson = async (e: ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    e.target.value = '';
+    if (!picked) return;
+    try {
+      setPending(readBackup(await picked.text(), settings));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Import impossible.');
+    }
+  };
+
+  return (
+    <>
+      <section className="card" aria-labelledby="theme-title">
+        <h2 id="theme-title" className="card__title">
+          Thème
+        </h2>
+        <div className="themes" role="radiogroup" aria-labelledby="theme-title">
+          {Object.values(THEMES).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={settings.theme === t.id}
+              className={`theme${settings.theme === t.id ? ' is-on' : ''}`}
+              style={{ '--theme': t.accent } as CSSProperties}
+              onClick={() => setSettings({ theme: t.id })}
+            >
+              <ThemeIcon theme={t.id} className="theme__icon" />
+              <span className="theme__name">{t.name}</span>
+              <span className="theme__reading">{t.reading}</span>
+            </button>
+          ))}
+        </div>
+        <label className="switch">
+          <span>
+            Animer le fond
+            <small>Désactiver économise la batterie.</small>
+          </span>
+          <input type="checkbox" checked={settings.motion} onChange={(e) => setSettings({ motion: e.target.checked })} />
+        </label>
+      </section>
+
+      <section className="card" aria-labelledby="currency-title">
+        <h2 id="currency-title" className="card__title">
+          Devise
+        </h2>
+        <Dropdown
+          labelledBy="currency-title"
+          value={settings.currency}
+          // The franc's symbol is its code: no need to print it twice.
+          options={CURRENCIES.map((c) => ({ value: c, label: c, detail: currencySymbol(c) === c ? undefined : currencySymbol(c) }))}
+          onChange={(currency) => setSettings({ currency })}
+        />
+        <p className="hint">Change l’affichage seulement, les montants ne sont pas convertis.</p>
+      </section>
+
+      <section className="card" aria-labelledby="data-title">
+        <h2 id="data-title" className="card__title">
+          Données
+        </h2>
+        <p className="hint">Tout reste sur cet appareil. Exportez une sauvegarde de temps en temps pour ne rien perdre.</p>
+        <div className="stack">
+          <button type="button" className="button" onClick={exportJson}>
+            Exporter une sauvegarde (JSON)
+          </button>
+          <button type="button" className="button" onClick={exportCsv}>
+            Exporter pour un tableur (CSV)
+          </button>
+          {pending ? (
+            <div className="confirm">
+              <p>
+                Remplacer toutes les données actuelles par cette sauvegarde ({pending.transactions.length} opérations,{' '}
+                {pending.categories.length} catégories) ?
+              </p>
+              <div className="form__actions">
+                <button type="button" className="button" onClick={() => setPending(null)}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="button button--danger"
+                  onClick={() => {
+                    importBackup(pending);
+                    notify(`${pending.transactions.length} opérations importées`);
+                    setPending(null);
+                  }}
+                >
+                  Remplacer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="button" onClick={() => file.current?.click()}>
+              Importer une sauvegarde
+            </button>
+          )}
+          <input ref={file} type="file" accept="application/json,.json" hidden onChange={importJson} />
+        </div>
+      </section>
+
+      <section className="card" aria-labelledby="reset-title">
+        <h2 id="reset-title" className="card__title">
+          Tout effacer
+        </h2>
+        {confirmReset ? (
+          <>
+            <p className="hint">Les opérations et catégories seront supprimées. Cette action est définitive.</p>
+            <div className="form__actions">
+              <button type="button" className="button" onClick={() => setConfirmReset(false)}>
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="button button--danger"
+                onClick={() => {
+                  reset();
+                  setConfirmReset(false);
+                  notify('Données effacées');
+                }}
+              >
+                Effacer
+              </button>
+            </div>
+          </>
+        ) : (
+          <button type="button" className="button button--danger button--wide" onClick={() => setConfirmReset(true)}>
+            Effacer toutes les données
+          </button>
+        )}
+      </section>
+
+      <p className="about">Kakuzu {__APP_VERSION__}</p>
+    </>
+  );
+}

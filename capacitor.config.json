@@ -1,0 +1,11 @@
+{
+  "appId": "io.github.pennecstv.kakuzu",
+  "appName": "Kakuzu",
+  "webDir": "dist",
+  "backgroundColor": "#070b14",
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK"
+    }
+  }
+}
