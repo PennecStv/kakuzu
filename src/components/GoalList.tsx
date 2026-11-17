@@ -1,0 +1,44 @@
+import { CircleCheck } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import { formatMoney } from '../lib/money';
+import type { Goal } from '../store/types';
+
+interface Props {
+  goals: Goal[];
+  currency: string;
+  onOpen: (goal: Goal) => void;
+}
+
+export function GoalList({ goals, currency, onOpen }: Props) {
+  return (
+    <ul className="goals">
+      {goals.map((g) => {
+        const share = Math.min(1, g.saved / g.target);
+        const done = share === 1;
+        return (
+          <li key={g.id}>
+            <button
+              type="button"
+              className={`goal${done ? ' is-done' : ''}`}
+              style={{ '--fill': `${share * 100}%` } as CSSProperties}
+              onClick={() => onOpen(g)}
+            >
+              <span className="goal__name">
+                {done && <CircleCheck aria-hidden="true" />}
+                {g.name}
+              </span>
+              <span className="split__share">{Math.floor(share * 100)} %</span>
+              <span className="split__amount">{formatMoney(g.saved, currency)}</span>
+              <span className="budget">
+                <span className="budget__bar">
+                  <span />
+                </span>
+                <span className="budget__text">{done ? 'Atteint' : `sur ${formatMoney(g.target, currency)}`}</span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

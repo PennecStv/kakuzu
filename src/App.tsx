@@ -3,6 +3,7 @@ import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
+import { GoalForm } from './components/GoalForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
 import { TransactionForm } from './components/TransactionForm';
@@ -15,10 +16,10 @@ import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { Settings } from './screens/Settings';
 import { useStore } from './store/store';
-import type { Category, Kind, Transaction } from './store/types';
+import type { Category, Goal, Kind, Transaction } from './store/types';
 
 const TITLES: Record<Exclude<Tab, 'home'>, string> = {
-  history: 'Opérations',
+  history: 'Suivi',
   categories: 'Catégories',
   settings: 'Réglages',
 };
@@ -34,6 +35,7 @@ export function App() {
   const [period, setPeriod] = useState(() => monthOf(today()));
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
+  const [goalSheet, setGoalSheet] = useState<{ editing?: Goal } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const lastQuip = useRef<string>(undefined);
 
@@ -74,9 +76,10 @@ export function App() {
               onOpen={openTransaction}
               onAdd={(kind) => setTxSheet({ kind })}
               onSeeAll={() => go('history')}
+              onGoal={(editing) => setGoalSheet({ editing })}
             />
           )}
-          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} />}
+          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} onGoal={(editing) => setGoalSheet({ editing })} />}
           {tab === 'categories' && <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
           {tab === 'settings' && <Settings notify={notify} />}
         </main>
@@ -121,6 +124,19 @@ export function App() {
             editing={catSheet.editing}
             onDone={(message) => {
               setCatSheet(null);
+              notify(message);
+            }}
+          />
+        )}
+      </Sheet>
+
+      <Sheet open={goalSheet !== null} title={goalSheet?.editing?.name ?? 'Nouvel objectif'} onClose={() => setGoalSheet(null)}>
+        {goalSheet && (
+          <GoalForm
+            key={goalSheet.editing?.id ?? 'new'}
+            editing={goalSheet.editing}
+            onDone={(message) => {
+              setGoalSheet(null);
               notify(message);
             }}
           />

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { GoalList } from '../components/GoalList';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
@@ -6,16 +7,19 @@ import { type Period, dayLabel } from '../lib/dates';
 import { formatSigned } from '../lib/money';
 import { groupByDay, inPeriod, matchesQuery } from '../lib/stats';
 import { useStore } from '../store/store';
-import type { Kind, Transaction } from '../store/types';
+import type { Goal, Kind, Transaction } from '../store/types';
 
 interface Props {
   period: Period;
   onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
+  onGoal: (goal?: Goal) => void;
 }
 
-export function History({ period, onPeriod, onOpen }: Props) {
+export function History({ period, onPeriod, onOpen, onGoal }: Props) {
+  const [view, setView] = useState<'entries' | 'goals'>('entries');
   const transactions = useStore((s) => s.transactions);
+  const goals = useStore((s) => s.goals);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [query, setQuery] = useState('');
@@ -32,8 +36,39 @@ export function History({ period, onPeriod, onOpen }: Props) {
     [transactions, period, kind, query, byId],
   );
 
+  const switcher = (
+    <Segmented
+      label="Afficher"
+      value={view}
+      onChange={setView}
+      options={[
+        { value: 'entries', label: 'Opérations' },
+        { value: 'goals', label: 'Objectifs' },
+      ]}
+    />
+  );
+
+  if (view === 'goals') {
+    return (
+      <>
+        {switcher}
+        {goals.length > 0 ? (
+          <section className="card" aria-label="Objectifs">
+            <GoalList goals={goals} currency={currency} onOpen={onGoal} />
+          </section>
+        ) : (
+          <p className="card empty">Aucun objectif pour l’instant.</p>
+        )}
+        <button type="button" className="button button--wide" onClick={() => onGoal()}>
+          Nouvel objectif
+        </button>
+      </>
+    );
+  }
+
   return (
     <>
+      {switcher}
       <PeriodSwitcher period={period} onChange={onPeriod} />
 
       <div className="filters">

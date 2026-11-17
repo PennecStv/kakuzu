@@ -1,6 +1,6 @@
 import { CURRENCIES } from './defaults';
 import { iconFromKanji, isIconId } from './icons';
-import type { Category, Kind, Settings, ThemeId, Transaction } from './types';
+import type { Category, Goal, Kind, Settings, ThemeId, Transaction } from './types';
 
 export interface Backup {
   app: 'kakuzu';
@@ -8,6 +8,7 @@ export interface Backup {
   exportedAt: string;
   categories: Category[];
   transactions: Transaction[];
+  goals: Goal[];
   settings: Settings;
 }
 
@@ -54,6 +55,13 @@ function readTransaction(v: unknown): Transaction | null {
   };
 }
 
+function readGoal(v: unknown): Goal | null {
+  if (!isObject(v)) return null;
+  const { id, name, target, saved } = v;
+  if (typeof id !== 'string' || typeof name !== 'string' || !isMinor(target)) return null;
+  return { id, name, target, saved: Number.isInteger(saved) ? Math.max(0, saved as number) : 0 };
+}
+
 /** Validates an imported file. Throws a message meant for the user. */
 export function readBackup(json: string, fallback: Settings): Omit<Backup, 'exportedAt'> {
   let data: unknown;
@@ -71,6 +79,8 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     .map(readTransaction)
     .filter((t): t is Transaction => t !== null && known.has(t.categoryId));
   if (categories.length === 0) throw new Error('La sauvegarde ne contient aucune catégorie.');
+  // Files saved before goals existed have none.
+  const goals = Array.isArray(data.goals) ? data.goals.map(readGoal).filter((g): g is Goal => g !== null) : [];
 
   const s = isObject(data.settings) ? data.settings : {};
   const settings: Settings = {
@@ -79,5 +89,5 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     currency: CURRENCIES.includes(s.currency as string) ? (s.currency as string) : fallback.currency,
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
   };
-  return { app: 'kakuzu', version: 2, categories, transactions, settings };
+  return { app: 'kakuzu', version: 2, categories, transactions, goals, settings };
 }

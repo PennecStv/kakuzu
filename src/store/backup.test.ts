@@ -36,6 +36,15 @@ describe('readBackup', () => {
     expect(backup.categories.map((c) => c.color)).toEqual(['#1bb3ba']);
   });
 
+  it('reads goals, and none from older files', () => {
+    expect(readBackup(JSON.stringify(valid), fallback).goals).toEqual([]);
+    const goals = [
+      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000 },
+      { id: 'bad', name: 'Sans cible', target: 0, saved: 0 },
+    ];
+    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([goals[0]]);
+  });
+
   it('rejects files from elsewhere', () => {
     expect(() => readBackup('not json', fallback)).toThrow();
     expect(() => readBackup(JSON.stringify({ ...valid, app: 'other' }), fallback)).toThrow();

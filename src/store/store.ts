@@ -3,11 +3,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Backup } from './backup';
 import { DEFAULT_CATEGORIES } from './defaults';
 import { migrate } from './migrations';
-import type { Category, Kind, Settings, Transaction } from './types';
+import type { Category, Goal, Kind, Settings, Transaction } from './types';
 
 export interface State {
   categories: Category[];
   transactions: Transaction[];
+  goals: Goal[];
   settings: Settings;
 }
 
@@ -21,14 +22,18 @@ interface Actions {
   updateCategory: (id: string, patch: Partial<Omit<Category, 'id' | 'kind'>>) => void;
   /** Moves the category's entries to `fallbackId` before removing it. */
   deleteCategory: (id: string, fallbackId: string) => void;
+  addGoal: (g: Omit<Goal, 'id'>) => void;
+  updateGoal: (id: string, patch: Partial<Omit<Goal, 'id'>>) => void;
+  deleteGoal: (id: string) => void;
   setSettings: (patch: Partial<Settings>) => void;
-  importBackup: (backup: Pick<Backup, 'categories' | 'transactions' | 'settings'>) => void;
+  importBackup: (backup: Pick<Backup, 'categories' | 'transactions' | 'goals' | 'settings'>) => void;
   reset: () => void;
 }
 
 export const initialState: State = {
   categories: DEFAULT_CATEGORIES,
   transactions: [],
+  goals: [],
   settings: { theme: 'koi', currency: 'EUR', motion: true },
 };
 
@@ -70,18 +75,25 @@ export const useStore = create<State & Actions>()(
           transactions: s.transactions.map((t) => (t.categoryId === id ? { ...t, categoryId: fallbackId } : t)),
         })),
 
+      addGoal: (g) => set((s) => ({ goals: [...s.goals, { ...g, id: crypto.randomUUID() }] })),
+
+      updateGoal: (id, patch) => set((s) => ({ goals: s.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
+
+      deleteGoal: (id) => set((s) => ({ goals: s.goals.filter((g) => g.id !== id) })),
+
       setSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
 
-      importBackup: ({ categories, transactions, settings }) => set({ categories, transactions, settings }),
+      importBackup: ({ categories, transactions, goals, settings }) => set({ categories, transactions, goals, settings }),
 
-      reset: () => set({ categories: DEFAULT_CATEGORIES, transactions: [] }),
+      reset: () => set({ categories: DEFAULT_CATEGORIES, transactions: [], goals: [] }),
     }),
     {
       name: 'kakuzu',
       version: 2,
       migrate,
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ categories, transactions, settings }) => ({ categories, transactions, settings }),
+      // A state saved before goals existed has none: the default merge keeps the empty list.
+      partialize: ({ categories, transactions, goals, settings }) => ({ categories, transactions, goals, settings }),
     },
   ),
 );

@@ -31,8 +31,8 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
 
   const exportJson = () => {
-    const { categories, transactions } = useStore.getState();
-    const backup: Backup = { app: 'kakuzu', version: 2, exportedAt: new Date().toISOString(), categories, transactions, settings };
+    const { categories, transactions, goals } = useStore.getState();
+    const backup: Backup = { app: 'kakuzu', version: 2, exportedAt: new Date().toISOString(), categories, transactions, goals, settings };
     download(`kakuzu-${today()}.json`, 'application/json', JSON.stringify(backup, null, 2));
   };
 
@@ -149,7 +149,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         </h2>
         {confirmReset ? (
           <>
-            <p className="hint">Les opérations et catégories seront supprimées. Cette action est définitive.</p>
+            <p className="hint">Les opérations, catégories et objectifs seront supprimés. Cette action est définitive.</p>
             <div className="form__actions">
               <button type="button" className="button" onClick={() => setConfirmReset(false)}>
                 Annuler

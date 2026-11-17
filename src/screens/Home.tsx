@@ -1,5 +1,6 @@
 import { type CSSProperties, useMemo, useState } from 'react';
 import { Donut } from '../components/Donut';
+import { GoalList } from '../components/GoalList';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
@@ -9,7 +10,7 @@ import { type Period, type Unit, lastMonth, unitOf } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
 import { type Slice, byCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
 import { categoryColor, useStore } from '../store/store';
-import type { Kind, Transaction } from '../store/types';
+import type { Goal, Kind, Transaction } from '../store/types';
 
 interface Props {
   period: Period;
@@ -17,6 +18,7 @@ interface Props {
   onOpen: (t: Transaction) => void;
   onAdd: (kind: Kind) => void;
   onSeeAll: () => void;
+  onGoal: (goal?: Goal) => void;
 }
 
 const BALANCE: Record<Unit, string> = { day: 'Solde du jour', month: 'Solde du mois', year: 'Solde de l’année' };
@@ -26,8 +28,9 @@ const SPLIT: Record<Kind, { caption: string; empty: string; add: string }> = {
   income: { caption: 'reçus', empty: 'Aucun revenu sur cette période.', add: 'Ajouter un revenu' },
 };
 
-export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
+export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Props) {
   const transactions = useStore((s) => s.transactions);
+  const goals = useStore((s) => s.goals);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [active, setActive] = useState<string | null>(null);
@@ -152,6 +155,22 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll }: Props) {
               })}
             </ul>
           </>
+        )}
+      </section>
+
+      <section className="card" aria-labelledby="goals-title">
+        <div className="card__head">
+          <h2 id="goals-title" className="card__title">
+            Objectifs
+          </h2>
+          <button type="button" className="link" onClick={() => onGoal()}>
+            Nouvel objectif
+          </button>
+        </div>
+        {goals.length > 0 ? (
+          <GoalList goals={goals} currency={currency} onOpen={onGoal} />
+        ) : (
+          <p className="hint">Un achat, une épargne : fixez un montant à atteindre et versez au fil du temps.</p>
         )}
       </section>
 

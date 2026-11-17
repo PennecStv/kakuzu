@@ -27,6 +27,16 @@ export interface Transaction {
   createdAt: number;
 }
 
+/** Money put aside by hand for a project, outside the entries. */
+export interface Goal {
+  id: string;
+  name: string;
+  /** Amount to reach, in minor units. */
+  target: number;
+  /** Amount put aside so far, in minor units, never negative. */
+  saved: number;
+}
+
 export interface Settings {
   theme: ThemeId;
   currency: string;

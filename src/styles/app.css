@@ -434,6 +434,12 @@
   background: var(--danger);
 }
 
+.goal-move {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--hairline);
+}
+
 .budget__text {
   font-size: 12px;
   color: var(--ink-3);
@@ -1294,6 +1300,91 @@
   background: none;
   color: var(--accent);
   font-weight: 600;
+}
+
+/* ---------- goals ---------- */
+
+/* Registered so the fill animates like a length; inherited so the row and its bar move together. */
+@property --fill {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+.goals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The theme's accent fills the row up to the share saved, deeper as it nears the target; capped at 28 % so --ink-2 keeps 4.5:1 on the palest accent. */
+.goal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 2px 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 5%, transparent),
+    color-mix(in srgb, var(--accent) calc(12% + var(--fill) * 0.16), transparent) var(--fill),
+    transparent var(--fill)
+  );
+  text-align: left;
+  transition: --fill 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: goal-fill 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.goal.is-done {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.goal__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal__name svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  color: var(--accent);
+  animation: goal-pop 0.5s 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.goal .split__share,
+.goal .budget__text {
+  color: var(--ink-2);
+}
+
+.goal .budget {
+  grid-column: 1 / -1;
+}
+
+.goal .budget__bar > span {
+  width: var(--fill);
+}
+
+@keyframes goal-fill {
+  from {
+    --fill: 0%;
+  }
+}
+
+@keyframes goal-pop {
+  from {
+    transform: scale(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

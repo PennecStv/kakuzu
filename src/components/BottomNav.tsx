@@ -4,7 +4,7 @@ export type Tab = 'home' | 'history' | 'categories' | 'settings';
 
 const TABS: { id: Tab; Icon: LucideIcon; label: string }[] = [
   { id: 'home', Icon: ChartPie, label: 'Accueil' },
-  { id: 'history', Icon: ReceiptText, label: 'Opérations' },
+  { id: 'history', Icon: ReceiptText, label: 'Suivi' },
   { id: 'categories', Icon: Shapes, label: 'Catégories' },
   { id: 'settings', Icon: Settings, label: 'Réglages' },
 ];
