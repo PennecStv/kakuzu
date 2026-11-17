@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Backup } from './backup';
+import type { SheetImport } from './sheet';
 import { DEFAULT_CATEGORIES } from './defaults';
 import { migrate } from './migrations';
 import type { Category, Goal, Kind, Settings, Transaction } from './types';
@@ -27,6 +28,8 @@ interface Actions {
   deleteGoal: (id: string) => void;
   setSettings: (patch: Partial<Settings>) => void;
   importBackup: (backup: Pick<Backup, 'categories' | 'transactions' | 'goals' | 'settings'>) => void;
+  /** Adds the entries of a spreadsheet to the current ones. */
+  importSheet: (sheet: Pick<SheetImport, 'categories' | 'transactions'>) => void;
   reset: () => void;
 }
 
@@ -84,6 +87,9 @@ export const useStore = create<State & Actions>()(
       setSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
 
       importBackup: ({ categories, transactions, goals, settings }) => set({ categories, transactions, goals, settings }),
+
+      importSheet: ({ categories, transactions }) =>
+        set((s) => ({ categories: [...s.categories, ...categories], transactions: [...s.transactions, ...transactions] })),
 
       reset: () => set({ categories: DEFAULT_CATEGORIES, transactions: [], goals: [] }),
     }),

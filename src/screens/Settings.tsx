@@ -1,12 +1,15 @@
+import { Info } from 'lucide-react';
 import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
 import { THEMES } from '../ascii/themes';
 import { Dropdown } from '../components/Dropdown';
 import { ThemeIcon } from '../components/ThemeIcon';
-import { toCsv } from '../lib/csv';
+import { decodeCsv, parseCsv, toCsv } from '../lib/csv';
 import { currencySymbol } from '../lib/money';
 import { today } from '../lib/dates';
+import { readXlsx } from '../lib/xlsx';
 import { type Backup, readBackup } from '../store/backup';
 import { CURRENCIES } from '../store/defaults';
+import { type SheetImport, readSheets } from '../store/sheet';
 import { useStore } from '../store/store';
 
 function download(name: string, type: string, content: string) {
@@ -21,12 +24,77 @@ function download(name: string, type: string, content: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+const count = (n: number, word: string) => `${n} ${word}${n > 1 ? 's' : ''}`;
+
+async function readSpreadsheet(file: File) {
+  const data = await file.arrayBuffer();
+  if (/\.csv$/i.test(file.name)) return [{ name: '', rows: parseCsv(decodeCsv(data)) }];
+  return readXlsx(data).catch(() => {
+    throw new Error('Fichier illisible. Enregistrez-le en .xlsx ou en .csv.');
+  });
+}
+
+function SheetFormat() {
+  return (
+    <div id="sheet-format" className="sheet-format">
+      <p>Fichier .xlsx ou .csv. Les opérations s’ajoutent à celles déjà présentes.</p>
+      <p>Une ligne d’en-tête, puis une opération par ligne. Colonnes lues, dans n’importe quel ordre :</p>
+      <dl>
+        <dt>Date</dt>
+        <dd>14/11/2026 ou 2026-11-14. Obligatoire.</dd>
+        <dt>Montant</dt>
+        <dd>23,40, sans signe. Obligatoire.</dd>
+        <dt>Type</dt>
+        <dd>Dépense ou Revenu. Sans cette colonne, nommez la feuille Dépenses ou Revenus.</dd>
+        <dt>Catégorie</dt>
+        <dd>Créée si elle n’existe pas. Vide : Autres.</dd>
+        <dt>Note</dt>
+        <dd>Facultative.</dd>
+      </dl>
+      <div className="sheet-format__table">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Catégorie</th>
+              <th>Montant</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>14/11/2026</td>
+              <td>Dépense</td>
+              <td>Courses</td>
+              <td>23,40</td>
+              <td>Marché</td>
+            </tr>
+            <tr>
+              <td>01/11/2026</td>
+              <td>Revenu</td>
+              <td>Salaire</td>
+              <td>1850</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>L’export CSV ci-dessus suit ce format.</p>
+    </div>
+  );
+}
+
 export function Settings({ notify }: { notify: (text: string) => void }) {
   const settings = useStore((s) => s.settings);
   const setSettings = useStore((s) => s.setSettings);
   const importBackup = useStore((s) => s.importBackup);
+  const importSheet = useStore((s) => s.importSheet);
   const reset = useStore((s) => s.reset);
   const file = useRef<HTMLInputElement>(null);
+  const sheetFile = useRef<HTMLInputElement>(null);
+  const [format, setFormat] = useState(false);
+  const [pendingSheet, setPendingSheet] = useState<SheetImport | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
 
@@ -51,6 +119,24 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Import impossible.');
     }
+  };
+
+  const pickSheet = async (e: ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    e.target.value = '';
+    if (!picked) return;
+    try {
+      setPendingSheet(readSheets(await readSpreadsheet(picked), useStore.getState().categories));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : 'Import impossible.');
+    }
+  };
+
+  const sheetSummary = (p: SheetImport) => {
+    const expenses = p.transactions.filter((t) => t.kind === 'expense').length;
+    const added = p.categories.length ? ` et ${count(p.categories.length, 'catégorie')}` : '';
+    const skipped = p.skipped ? ` ${count(p.skipped, 'ligne')} illisible${p.skipped > 1 ? 's' : ''} ignorée${p.skipped > 1 ? 's' : ''}.` : '';
+    return `Ajouter ${count(p.transactions.length, 'opération')} (${count(expenses, 'dépense')}, ${count(p.transactions.length - expenses, 'revenu')})${added} ?${skipped}`;
   };
 
   return (
@@ -140,6 +226,51 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
             </button>
           )}
           <input ref={file} type="file" accept="application/json,.json" hidden onChange={importJson} />
+          {pendingSheet ? (
+            <div className="confirm">
+              <p>{sheetSummary(pendingSheet)}</p>
+              <div className="form__actions">
+                <button type="button" className="button" onClick={() => setPendingSheet(null)}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="button button--primary"
+                  onClick={() => {
+                    importSheet(pendingSheet);
+                    notify(`${count(pendingSheet.transactions.length, 'opération')} ajoutée${pendingSheet.transactions.length > 1 ? 's' : ''}`);
+                    setPendingSheet(null);
+                  }}
+                >
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="row">
+              <button type="button" className="button" onClick={() => sheetFile.current?.click()}>
+                Importer un tableur
+              </button>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label="Format attendu"
+                aria-expanded={format}
+                aria-controls="sheet-format"
+                onClick={() => setFormat(!format)}
+              >
+                <Info aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          {format && <SheetFormat />}
+          <input
+            ref={sheetFile}
+            type="file"
+            accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+            hidden
+            onChange={pickSheet}
+          />
         </div>
       </section>
 

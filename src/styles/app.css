@@ -1407,3 +1407,70 @@
   }
 }
 
+/* ---------- spreadsheet import ---------- */
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row .button {
+  flex: 1;
+}
+
+.row .icon-button[aria-expanded='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sheet-format {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.sheet-format p,
+.sheet-format dl {
+  margin: 0;
+}
+
+.sheet-format dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+}
+
+.sheet-format dt {
+  color: var(--ink);
+}
+
+.sheet-format dd {
+  margin: 0;
+}
+
+.sheet-format__table {
+  overflow-x: auto;
+}
+
+.sheet-format table {
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sheet-format th,
+.sheet-format td {
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  text-align: left;
+}
+
+.sheet-format th {
+  color: var(--ink);
+  font-weight: 500;
+}
