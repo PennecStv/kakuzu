@@ -37,4 +37,20 @@ describe('store', () => {
     if (removed) s.restoreTransaction(removed);
     expect(useStore.getState().transactions).toMatchObject([{ id, categoryId: 'other-expense' }]);
   });
+
+  it('adds the recurring entries due, once', () => {
+    const s = useStore.getState();
+    s.addRecurring({ kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', next: '2026-10' });
+    expect(useStore.getState().postRecurring('2026-11')).toBe(2);
+    expect(useStore.getState().postRecurring('2026-11')).toBe(0);
+    expect(useStore.getState().transactions.map((t) => t.date)).toEqual(['2026-10-01', '2026-11-01']);
+    expect(useStore.getState().recurring[0]?.next).toBe('2026-12');
+  });
+
+  it('moves recurring entries of a deleted category', () => {
+    const s = useStore.getState();
+    s.addRecurring({ kind: 'expense', amount: 3000, categoryId: 'subscriptions', note: '', next: '2026-12' });
+    s.deleteCategory('subscriptions', 'other-expense');
+    expect(useStore.getState().recurring[0]?.categoryId).toBe('other-expense');
+  });
 });

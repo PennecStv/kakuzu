@@ -2,14 +2,17 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Backup } from './backup';
 import type { SheetImport } from './sheet';
-import { DEFAULT_CATEGORIES } from './defaults';
+import { DEFAULT_CATEGORIES, DEFAULT_REMINDERS } from './defaults';
 import { migrate } from './migrations';
-import type { Category, Goal, Kind, Settings, Transaction } from './types';
+import type { MonthKey } from '../lib/dates';
+import { dueEntries } from '../lib/recurring';
+import type { Category, Goal, Kind, Recurring, Settings, Transaction } from './types';
 
 export interface State {
   categories: Category[];
   transactions: Transaction[];
   goals: Goal[];
+  recurring: Recurring[];
   settings: Settings;
 }
 
@@ -26,8 +29,14 @@ interface Actions {
   addGoal: (g: Omit<Goal, 'id'>) => void;
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id'>>) => void;
   deleteGoal: (id: string) => void;
+  addRecurring: (r: Omit<Recurring, 'id'>) => void;
+  /** Changes the months to come; the entries already added stay as they are. */
+  updateRecurring: (id: string, patch: Partial<Omit<Recurring, 'id' | 'next'>>) => void;
+  deleteRecurring: (id: string) => void;
+  /** Adds what the recurring entries owe up to `now`. Returns how many entries were added. */
+  postRecurring: (now: MonthKey) => number;
   setSettings: (patch: Partial<Settings>) => void;
-  importBackup: (backup: Pick<Backup, 'categories' | 'transactions' | 'goals' | 'settings'>) => void;
+  importBackup: (backup: Pick<Backup, 'categories' | 'transactions' | 'goals' | 'recurring' | 'settings'>) => void;
   /** Adds the entries of a spreadsheet to the current ones. */
   importSheet: (sheet: Pick<SheetImport, 'categories' | 'transactions'>) => void;
   reset: () => void;
@@ -37,7 +46,8 @@ export const initialState: State = {
   categories: DEFAULT_CATEGORIES,
   transactions: [],
   goals: [],
-  settings: { theme: 'koi', currency: 'EUR', motion: true },
+  recurring: [],
+  settings: { theme: 'koi', currency: 'EUR', motion: true, carryOver: true, reminders: DEFAULT_REMINDERS },
 };
 
 export const useStore = create<State & Actions>()(
@@ -76,6 +86,7 @@ export const useStore = create<State & Actions>()(
         set((s) => ({
           categories: s.categories.filter((c) => c.id !== id),
           transactions: s.transactions.map((t) => (t.categoryId === id ? { ...t, categoryId: fallbackId } : t)),
+          recurring: s.recurring.map((r) => (r.categoryId === id ? { ...r, categoryId: fallbackId } : r)),
         })),
 
       addGoal: (g) => set((s) => ({ goals: [...s.goals, { ...g, id: crypto.randomUUID() }] })),
@@ -84,22 +95,42 @@ export const useStore = create<State & Actions>()(
 
       deleteGoal: (id) => set((s) => ({ goals: s.goals.filter((g) => g.id !== id) })),
 
+      addRecurring: (r) => set((s) => ({ recurring: [...s.recurring, { ...r, id: crypto.randomUUID() }] })),
+
+      updateRecurring: (id, patch) =>
+        set((s) => ({ recurring: s.recurring.map((r) => (r.id === id ? { ...r, ...patch } : r)) })),
+
+      deleteRecurring: (id) => set((s) => ({ recurring: s.recurring.filter((r) => r.id !== id) })),
+
+      postRecurring: (now) => {
+        const { entries, recurring } = dueEntries(get().recurring, now);
+        if (entries.length === 0) return 0;
+        const stamp = Date.now();
+        set((s) => ({
+          recurring,
+          // Distinct stamps keep the order they were added in within a day.
+          transactions: [...s.transactions, ...entries.map((e, i) => ({ ...e, id: crypto.randomUUID(), createdAt: stamp + i }))],
+        }));
+        return entries.length;
+      },
+
       setSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
 
-      importBackup: ({ categories, transactions, goals, settings }) => set({ categories, transactions, goals, settings }),
+      importBackup: ({ categories, transactions, goals, recurring, settings }) =>
+        set({ categories, transactions, goals, recurring, settings }),
 
       importSheet: ({ categories, transactions }) =>
         set((s) => ({ categories: [...s.categories, ...categories], transactions: [...s.transactions, ...transactions] })),
 
-      reset: () => set({ categories: DEFAULT_CATEGORIES, transactions: [], goals: [] }),
+      reset: () => set({ categories: DEFAULT_CATEGORIES, transactions: [], goals: [], recurring: [] }),
     }),
     {
       name: 'kakuzu',
-      version: 2,
+      version: 3,
       migrate,
       storage: createJSONStorage(() => localStorage),
       // A state saved before goals existed has none: the default merge keeps the empty list.
-      partialize: ({ categories, transactions, goals, settings }) => ({ categories, transactions, goals, settings }),
+      partialize: ({ categories, transactions, goals, recurring, settings }) => ({ categories, transactions, goals, recurring, settings }),
     },
   ),
 );

@@ -101,7 +101,7 @@ export function TrendChart({ rows, currency }: Props) {
 
           <path className="trend__wash" d={`${line('income')}L${x(last)} ${floor}L${x(0)} ${floor}Z`} />
           {SERIES.map((s) => (
-            <path key={s.key} className={`trend__line ${s.className}`} d={line(s.key)} />
+            <path key={s.key} className={`trend__line ${s.className}`} d={line(s.key)} pathLength={1} />
           ))}
           {SERIES.map((s) => (
             <circle key={s.key} className={`trend__dot ${s.className}`} cx={x(at)} cy={y(row[s.key])} r={4} />

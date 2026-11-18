@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { CategoryForm } from './components/CategoryForm';
 import { Explosion } from './components/Explosion';
 import { GoalForm } from './components/GoalForm';
+import { RecurringForm } from './components/RecurringForm';
 import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
 import { TransactionForm } from './components/TransactionForm';
 import { Wordmark } from './components/Wordmark';
+import { goalReminders } from './lib/goals';
+import { canNotify, scheduleReminders } from './native/notifications';
 import { monthOf, today } from './lib/dates';
 import { formatMoney } from './lib/money';
 import { pickQuip } from './lib/quips';
@@ -17,7 +20,7 @@ import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { Settings } from './screens/Settings';
 import { useStore } from './store/store';
-import type { Category, Goal, Kind, Transaction } from './store/types';
+import type { Category, Goal, Kind, Recurring, Transaction } from './store/types';
 
 const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   history: 'Suivi',
@@ -25,18 +28,43 @@ const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   settings: 'Réglages',
 };
 
+/** The tabs as the bar lays them out: a page slides in from the side of its tab. */
+const TAB_ORDER: Tab[] = ['home', 'history', 'categories', 'settings'];
+
+/** The page sliding out, pinned where it was on screen while the next one slides in. */
+interface Leaving {
+  tab: Tab;
+  back: boolean;
+  top: number;
+  left: number;
+  width: number;
+}
+
 export function App() {
   const theme = useStore((s) => s.settings.theme);
   const motion = useStore((s) => s.settings.motion);
   const currency = useStore((s) => s.settings.currency);
   const deleteTransaction = useStore((s) => s.deleteTransaction);
   const restoreTransaction = useStore((s) => s.restoreTransaction);
+  const postRecurring = useStore((s) => s.postRecurring);
+  const goals = useStore((s) => s.goals);
+  const reminders = useStore((s) => s.settings.reminders);
+
+  useEffect(() => {
+    if (!canNotify) return;
+    const planned = reminders.notify ? goalReminders(goals, new Date(), reminders, currency) : [];
+    // A failed schedule keeps the previous one, and there is nothing the user could do about it.
+    scheduleReminders(planned).catch(() => undefined);
+  }, [goals, reminders, currency]);
 
   const [tab, setTab] = useState<Tab>('home');
+  const [leaving, setLeaving] = useState<Leaving | null>(null);
+  const pages = useRef<HTMLElement>(null);
   const [period, setPeriod] = useState(() => monthOf(today()));
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
   const [goalSheet, setGoalSheet] = useState<{ editing?: Goal } | null>(null);
+  const [recurringSheet, setRecurringSheet] = useState<{ editing?: Recurring } | null>(null);
   const [blast, setBlast] = useState<{ key: number; goalId: string } | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const lastQuip = useRef<string>(undefined);
@@ -48,7 +76,24 @@ export function App() {
     document.documentElement.style.setProperty('--accent', THEMES[theme].accent);
   }, [theme]);
 
+  useEffect(() => {
+    const post = () => {
+      const added = postRecurring(monthOf(today()));
+      if (added) notify(added > 1 ? `${added} opérations récurrentes ajoutées` : '1 opération récurrente ajoutée');
+    };
+    post();
+    // A phone can keep the app in the background for days, across the start of a month.
+    const onShow = () => document.visibilityState === 'visible' && post();
+    document.addEventListener('visibilitychange', onShow);
+    return () => document.removeEventListener('visibilitychange', onShow);
+  }, [postRecurring, notify]);
+
   const go = (next: Tab) => {
+    const box = pages.current?.getBoundingClientRect();
+    if (next !== tab && box && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const back = TAB_ORDER.indexOf(next) < TAB_ORDER.indexOf(tab);
+      setLeaving({ tab, back, top: box.top, left: box.left, width: box.width });
+    }
     setTab(next);
     window.scrollTo({ top: 0 });
   };
@@ -61,29 +106,56 @@ export function App() {
     notify('Opération supprimée', { label: 'Annuler', run: () => restoreTransaction(t) });
   };
 
+  const screens: Record<Tab, () => ReactNode> = {
+    home: () => (
+      <Home
+        period={period}
+        onPeriod={setPeriod}
+        onOpen={openTransaction}
+        onAdd={(kind) => setTxSheet({ kind })}
+        onSeeAll={() => go('history')}
+        onGoal={(editing) => setGoalSheet({ editing })}
+      />
+    ),
+    history: () => (
+      <History
+        period={period}
+        onPeriod={setPeriod}
+        onOpen={openTransaction}
+        onGoal={(editing) => setGoalSheet({ editing })}
+        onRecurring={(editing) => setRecurringSheet({ editing })}
+      />
+    ),
+    categories: () => <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />,
+    settings: () => <Settings notify={notify} />,
+  };
+
   return (
     <>
       <AsciiBackground theme={theme} motion={motion} />
 
-      <div className="app">
-        <header className="top">
-          <h1>{tab === 'home' ? <Wordmark /> : TITLES[tab]}</h1>
-        </header>
-
-        <main className="screen">
-          {tab === 'home' && (
-            <Home
-              period={period}
-              onPeriod={setPeriod}
-              onOpen={openTransaction}
-              onAdd={(kind) => setTxSheet({ kind })}
-              onSeeAll={() => go('history')}
-              onGoal={(editing) => setGoalSheet({ editing })}
-            />
-          )}
-          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} onGoal={(editing) => setGoalSheet({ editing })} />}
-          {tab === 'categories' && <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
-          {tab === 'settings' && <Settings notify={notify} />}
+      {/* is-still drops the entrances of cards and charts along with the scene. */}
+      <div className={motion ? 'app' : 'app is-still'}>
+        {/* Pages stay in tab order in the DOM: moving a node would restart its animations and drop focus. */}
+        <main ref={pages}>
+          {TAB_ORDER.filter((t) => t === tab || t === leaving?.tab).map((t) => {
+            const out = t !== tab && leaving;
+            const slide = out ? `page--leaving page--to-${out.back ? 'right' : 'left'}` : leaving ? `page--from-${leaving.back ? 'left' : 'right'}` : '';
+            return (
+              <div
+                key={t}
+                className={`page ${slide}`}
+                style={out ? { top: out.top, left: out.left, width: out.width } : undefined}
+                inert={Boolean(out)}
+                onAnimationEnd={(e) => out && e.target === e.currentTarget && setLeaving(null)}
+              >
+                <header className="top">
+                  <h1>{t === 'home' ? <Wordmark /> : TITLES[t]}</h1>
+                </header>
+                <div className="screen">{screens[t]()}</div>
+              </div>
+            );
+          })}
         </main>
       </div>
 
@@ -142,6 +214,23 @@ export function App() {
               if (!reached) return notify(message);
               setToast({ id: Date.now(), text: message, tone: 'income' });
               if (goalSheet?.editing) setBlast({ key: Date.now(), goalId: goalSheet.editing.id });
+            }}
+          />
+        )}
+      </Sheet>
+
+      <Sheet
+        open={recurringSheet !== null}
+        title={recurringSheet?.editing ? 'Opération récurrente' : 'Nouvelle opération récurrente'}
+        onClose={() => setRecurringSheet(null)}
+      >
+        {recurringSheet && (
+          <RecurringForm
+            key={recurringSheet.editing?.id ?? 'new'}
+            editing={recurringSheet.editing}
+            onDone={(message) => {
+              setRecurringSheet(null);
+              notify(message);
             }}
           />
         )}

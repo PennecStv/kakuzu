@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Bell, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { type CSSProperties, type ChangeEvent, useRef, useState } from 'react';
 import { THEMES } from '../ascii/themes';
 import { Dropdown } from '../components/Dropdown';
@@ -8,7 +8,8 @@ import { currencySymbol } from '../lib/money';
 import { today } from '../lib/dates';
 import { readXlsx } from '../lib/xlsx';
 import { type Backup, readBackup } from '../store/backup';
-import { CURRENCIES, homeOrder } from '../store/defaults';
+import { allowNotifications, canNotify } from '../native/notifications';
+import { CURRENCIES, REMINDER_DAYS, REMINDER_HOURS, homeOrder } from '../store/defaults';
 import { type SheetImport, readSheets } from '../store/sheet';
 import { useStore } from '../store/store';
 import type { HomeCard } from '../store/types';
@@ -109,8 +110,17 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const [pending, setPending] = useState<ReturnType<typeof readBackup> | null>(null);
 
   const exportJson = () => {
-    const { categories, transactions, goals } = useStore.getState();
-    const backup: Backup = { app: 'kakuzu', version: 2, exportedAt: new Date().toISOString(), categories, transactions, goals, settings };
+    const { categories, transactions, goals, recurring } = useStore.getState();
+    const backup: Backup = {
+      app: 'kakuzu',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      categories,
+      transactions,
+      goals,
+      recurring,
+      settings,
+    };
     download(`kakuzu-${today()}.json`, 'application/json', JSON.stringify(backup, null, 2));
   };
 
@@ -140,6 +150,17 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Import impossible.');
     }
+  };
+
+  const setReminders = (patch: Partial<typeof settings.reminders>) => setSettings({ reminders: { ...settings.reminders, ...patch } });
+  const notifying = settings.reminders.notify;
+  const toggleNotify = async (on: boolean) => {
+    // On the web the switch only turns the red flag on: there is no permission to ask.
+    if (on && canNotify && !(await allowNotifications())) {
+      notify('Notifications refusées. Autorisez-les dans les réglages du téléphone.');
+      return;
+    }
+    setReminders({ notify: on });
   };
 
   const order = homeOrder(settings.home);
@@ -184,8 +205,8 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         </div>
         <label className="switch">
           <span>
-            Animer le fond
-            <small>Désactiver économise la batterie.</small>
+            Animations
+            <small>Le fond, l’arrivée des cartes et des graphiques. Désactiver économise la batterie.</small>
           </span>
           <input type="checkbox" checked={settings.motion} onChange={(e) => setSettings({ motion: e.target.checked })} />
         </label>
@@ -248,6 +269,59 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
             ))}
           </ol>
         )}
+        <label className="switch">
+          <span>
+            Reporter le solde
+            <small>Le solde d’un mois, même négatif, passe au suivant.</small>
+          </span>
+          <input type="checkbox" checked={settings.carryOver} onChange={(e) => setSettings({ carryOver: e.target.checked })} />
+        </label>
+      </section>
+
+      <section className="card" aria-labelledby="reminders-title">
+        <h2 id="reminders-title" className="card__title">
+          Objectifs
+        </h2>
+        <label className={`switch${notifying ? ' is-on' : ''}`}>
+          <Bell className="switch__icon" aria-hidden="true" />
+          <span>
+            Notifications
+            <small>Pour les objectifs avec une date butoir.</small>
+          </span>
+          <input type="checkbox" checked={notifying} onChange={(e) => void toggleNotify(e.target.checked)} />
+        </label>
+        {/* Always rendered so it can unfold; inert keeps it out of reach while folded. */}
+        <div className={`reveal${notifying ? ' is-open' : ''}`} inert={!notifying}>
+          <div>
+            <p id="reminder-days" className="label">
+              Alerter avant la date butoir
+            </p>
+            <Dropdown
+              labelledBy="reminder-days"
+              value={String(settings.reminders.days)}
+              options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d > 1 ? `${d} jours avant` : 'La veille' }))}
+              onChange={(d) => setReminders({ days: Number(d) })}
+            />
+            {canNotify && (
+              <>
+                <p id="reminder-hour" className="label reminder-hour">
+                  Heure du rappel
+                </p>
+                <Dropdown
+                  labelledBy="reminder-hour"
+                  value={String(settings.reminders.hour)}
+                  options={REMINDER_HOURS.map((h) => ({ value: String(h), label: `${h} h` }))}
+                  onChange={(h) => setReminders({ hour: Number(h) })}
+                />
+              </>
+            )}
+            <p className="hint">
+              {canNotify
+                ? 'L’objectif passe en rouge et un rappel arrive sur le téléphone.'
+                : 'L’objectif passe en rouge. Le rappel sur le téléphone vient avec l’application Android.'}
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="card" aria-labelledby="data-title">
@@ -345,7 +419,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         </h2>
         {confirmReset ? (
           <>
-            <p className="hint">Les opérations, catégories et objectifs seront supprimés. Cette action est définitive.</p>
+            <p className="hint">Les opérations, récurrentes ou non, les catégories et les objectifs seront supprimés. Cette action est définitive.</p>
             <div className="form__actions">
               <button type="button" className="button" onClick={() => setConfirmReset(false)}>
                 Annuler

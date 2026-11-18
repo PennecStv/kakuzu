@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readBackup } from './backup';
-import { homeOrder } from './defaults';
+import { DEFAULT_REMINDERS, homeOrder } from './defaults';
 import type { Settings } from './types';
 
-const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true };
+const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true, carryOver: true, reminders: DEFAULT_REMINDERS };
 
 const valid = {
   app: 'kakuzu',
@@ -12,7 +12,7 @@ const valid = {
   transactions: [
     { id: 'a', kind: 'expense', amount: 1250, categoryId: 'food', date: '2026-11-03', note: 'Pain', createdAt: 1 },
   ],
-  settings: { theme: 'frogs', currency: 'USD', motion: false },
+  settings: { theme: 'frogs', currency: 'USD', motion: false, carryOver: false, reminders: { days: 3, notify: false, hour: 18 } },
 };
 
 describe('readBackup', () => {
@@ -40,10 +40,24 @@ describe('readBackup', () => {
   it('reads goals, and none from older files', () => {
     expect(readBackup(JSON.stringify(valid), fallback).goals).toEqual([]);
     const goals = [
-      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000 },
+      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000, deadline: '2026-12-31' },
       { id: 'bad', name: 'Sans cible', target: 0, saved: 0 },
+      { id: 'trip', name: 'Voyage', target: 90000, saved: 0, deadline: '31/12/2026' },
     ];
-    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([goals[0]]);
+    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([
+      goals[0],
+      { id: 'trip', name: 'Voyage', target: 90000, saved: 0 },
+    ]);
+  });
+
+  it('reads recurring entries, and none from older files', () => {
+    expect(readBackup(JSON.stringify(valid), fallback).recurring).toEqual([]);
+    const recurring = [
+      { id: 'r1', kind: 'expense', amount: 65000, categoryId: 'food', note: 'Panier', next: '2026-12' },
+      { id: 'r2', kind: 'expense', amount: 65000, categoryId: 'ghost', note: '', next: '2026-12' },
+      { id: 'r3', kind: 'expense', amount: 65000, categoryId: 'food', note: '', next: '12/2026' },
+    ];
+    expect(readBackup(JSON.stringify({ ...valid, recurring }), fallback).recurring).toEqual([recurring[0]]);
   });
 
   it('cleans the home card order', () => {
@@ -73,6 +87,13 @@ describe('readBackup', () => {
       fallback,
     );
     expect(backup.transactions.map((t) => t.id)).toEqual(['a']);
+  });
+
+  it('keeps notifications off unless this phone already allows them', () => {
+    const settings = { ...valid.settings, reminders: { days: 45, notify: true, hour: 25 } };
+    expect(readBackup(JSON.stringify({ ...valid, settings }), fallback).settings.reminders).toEqual(DEFAULT_REMINDERS);
+    const allowed = { ...fallback, reminders: { ...DEFAULT_REMINDERS, notify: true } };
+    expect(readBackup(JSON.stringify({ ...valid, settings }), allowed).settings.reminders.notify).toBe(true);
   });
 
   it('falls back on unknown settings', () => {

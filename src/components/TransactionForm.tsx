@@ -3,7 +3,7 @@ import { today } from '../lib/dates';
 import { currencySymbol, parseAmount, toInput } from '../lib/money';
 import { categoriesOf, useStore } from '../store/store';
 import type { Kind, Transaction } from '../store/types';
-import { CategoryIcon } from './CategoryIcon';
+import { CategoryPicker } from './CategoryPicker';
 import { Segmented } from './Segmented';
 
 interface Props {
@@ -84,23 +84,7 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
         {error}
       </p>
 
-      <fieldset className="field">
-        <legend>Catégorie</legend>
-        <div className="picker">
-          {choices.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`picker__item${c.id === selected?.id ? ' is-on' : ''}`}
-              aria-pressed={c.id === selected?.id}
-              onClick={() => setCategoryId(c.id)}
-            >
-              <CategoryIcon category={c} />
-              <span>{c.name}</span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <CategoryPicker categories={choices} selected={selected} onSelect={setCategoryId} />
 
       <div className="form__row">
         <label className="field">
