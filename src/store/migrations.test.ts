@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CATEGORIES } from './defaults';
+import { DEFAULT_CATEGORIES, DEFAULT_REMINDERS } from './defaults';
 import { iconFromKanji } from './icons';
 import { migrate } from './migrations';
 
@@ -23,15 +23,15 @@ describe('migrate', () => {
     ]);
   });
 
-  it('starts version 2 data with no recurring entry and the carry-over on', () => {
+  it('starts version 2 data with no recurring entry, the carry-over on and reminders off', () => {
     const v2 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], settings };
     const state = migrate(v2, 2);
-    expect(state.settings).toEqual({ ...settings, carryOver: true });
+    expect(state.settings).toEqual({ ...settings, carryOver: true, reminders: DEFAULT_REMINDERS });
     expect(state.recurring).toEqual([]);
   });
 
   it('leaves current data alone', () => {
-    const v3 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], recurring: [], settings: { ...settings, carryOver: false } };
+    const v3 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], recurring: [], settings: { ...settings, carryOver: false, reminders: DEFAULT_REMINDERS } };
     expect(migrate(v3, 3)).toBe(v3);
   });
 

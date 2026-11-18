@@ -8,7 +8,8 @@ import { currencySymbol } from '../lib/money';
 import { today } from '../lib/dates';
 import { readXlsx } from '../lib/xlsx';
 import { type Backup, readBackup } from '../store/backup';
-import { CURRENCIES, homeOrder } from '../store/defaults';
+import { allowNotifications, canNotify } from '../native/notifications';
+import { CURRENCIES, REMINDER_DAYS, REMINDER_HOURS, homeOrder } from '../store/defaults';
 import { type SheetImport, readSheets } from '../store/sheet';
 import { useStore } from '../store/store';
 import type { HomeCard } from '../store/types';
@@ -151,6 +152,15 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
     }
   };
 
+  const setReminders = (patch: Partial<typeof settings.reminders>) => setSettings({ reminders: { ...settings.reminders, ...patch } });
+  const toggleNotify = async (on: boolean) => {
+    if (on && !(await allowNotifications())) {
+      notify('Notifications refusées. Autorisez-les dans les réglages du téléphone.');
+      return;
+    }
+    setReminders({ notify: on });
+  };
+
   const order = homeOrder(settings.home);
   const moveCard = (from: number, to: number) => {
     const next = [...order];
@@ -264,6 +274,48 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
           </span>
           <input type="checkbox" checked={settings.carryOver} onChange={(e) => setSettings({ carryOver: e.target.checked })} />
         </label>
+      </section>
+
+      <section className="card" aria-labelledby="reminders-title">
+        <h2 id="reminders-title" className="card__title">
+          Objectifs
+        </h2>
+        <p id="reminder-days" className="label">
+          Alerter avant la date butoir
+        </p>
+        <Dropdown
+          labelledBy="reminder-days"
+          value={String(settings.reminders.days)}
+          options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d > 1 ? `${d} jours avant` : 'La veille' }))}
+          onChange={(d) => setReminders({ days: Number(d) })}
+        />
+        <p className="hint">Un objectif pas encore atteint passe en rouge à partir de ce moment.</p>
+        {canNotify ? (
+          <>
+            <label className="switch">
+              <span>
+                Notifications
+                <small>Un rappel sur le téléphone ce jour-là.</small>
+              </span>
+              <input type="checkbox" checked={settings.reminders.notify} onChange={(e) => void toggleNotify(e.target.checked)} />
+            </label>
+            {settings.reminders.notify && (
+              <>
+                <p id="reminder-hour" className="label reminder-hour">
+                  Heure du rappel
+                </p>
+                <Dropdown
+                  labelledBy="reminder-hour"
+                  value={String(settings.reminders.hour)}
+                  options={REMINDER_HOURS.map((h) => ({ value: String(h), label: `${h} h` }))}
+                  onChange={(h) => setReminders({ hour: Number(h) })}
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <p className="hint">Les notifications viennent avec l’application Android.</p>
+        )}
       </section>
 
       <section className="card" aria-labelledby="data-title">

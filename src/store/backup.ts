@@ -1,4 +1,4 @@
-import { CURRENCIES, homeOrder } from './defaults';
+import { CURRENCIES, REMINDER_DAYS, REMINDER_HOURS, homeOrder } from './defaults';
 import { iconFromKanji, isIconId } from './icons';
 import type { Category, Goal, Kind, Recurring, Settings, ThemeId, Transaction } from './types';
 
@@ -80,6 +80,17 @@ function readGoal(v: unknown): Goal | null {
   };
 }
 
+function readReminders(v: unknown, fallback: Settings): Settings['reminders'] {
+  if (!isObject(v)) return fallback.reminders;
+  const { days, notify, hour } = v;
+  return {
+    days: REMINDER_DAYS.includes(days as number) ? (days as number) : fallback.reminders.days,
+    // Notifications need the permission of this phone: a file from another one cannot turn them on.
+    notify: notify === true && fallback.reminders.notify,
+    hour: REMINDER_HOURS.includes(hour as number) ? (hour as number) : fallback.reminders.hour,
+  };
+}
+
 /** Validates an imported file. Throws a message meant for the user. */
 export function readBackup(json: string, fallback: Settings): Omit<Backup, 'exportedAt'> {
   let data: unknown;
@@ -111,6 +122,7 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
     home: Array.isArray(s.home) ? homeOrder(s.home) : fallback.home,
     carryOver: typeof s.carryOver === 'boolean' ? s.carryOver : fallback.carryOver,
+    reminders: readReminders(s.reminders, fallback),
   };
   return { app: 'kakuzu', version: 2, categories, transactions, goals, recurring, settings };
 }

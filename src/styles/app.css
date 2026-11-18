@@ -1029,6 +1029,14 @@
   opacity: 0.35;
 }
 
+.card > .label + .dropdown {
+  margin-top: 6px;
+}
+
+.reminder-hour {
+  margin-top: 4px;
+}
+
 .about {
   margin: 8px 0 0;
   font-size: 12px;
@@ -1583,6 +1591,7 @@
 
 .row {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 

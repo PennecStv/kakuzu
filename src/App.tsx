@@ -10,6 +10,8 @@ import { Sheet } from './components/Sheet';
 import { Toast, type ToastMessage } from './components/Toast';
 import { TransactionForm } from './components/TransactionForm';
 import { Wordmark } from './components/Wordmark';
+import { goalReminders } from './lib/goals';
+import { canNotify, scheduleReminders } from './native/notifications';
 import { monthOf, today } from './lib/dates';
 import { formatMoney } from './lib/money';
 import { pickQuip } from './lib/quips';
@@ -45,6 +47,15 @@ export function App() {
   const deleteTransaction = useStore((s) => s.deleteTransaction);
   const restoreTransaction = useStore((s) => s.restoreTransaction);
   const postRecurring = useStore((s) => s.postRecurring);
+  const goals = useStore((s) => s.goals);
+  const reminders = useStore((s) => s.settings.reminders);
+
+  useEffect(() => {
+    if (!canNotify) return;
+    const planned = reminders.notify ? goalReminders(goals, new Date(), reminders, currency) : [];
+    // A failed schedule keeps the previous one, and there is nothing the user could do about it.
+    scheduleReminders(planned).catch(() => undefined);
+  }, [goals, reminders, currency]);
 
   const [tab, setTab] = useState<Tab>('home');
   const [leaving, setLeaving] = useState<Leaving | null>(null);

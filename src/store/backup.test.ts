@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readBackup } from './backup';
-import { homeOrder } from './defaults';
+import { DEFAULT_REMINDERS, homeOrder } from './defaults';
 import type { Settings } from './types';
 
-const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true, carryOver: true };
+const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true, carryOver: true, reminders: DEFAULT_REMINDERS };
 
 const valid = {
   app: 'kakuzu',
@@ -12,7 +12,7 @@ const valid = {
   transactions: [
     { id: 'a', kind: 'expense', amount: 1250, categoryId: 'food', date: '2026-11-03', note: 'Pain', createdAt: 1 },
   ],
-  settings: { theme: 'frogs', currency: 'USD', motion: false, carryOver: false },
+  settings: { theme: 'frogs', currency: 'USD', motion: false, carryOver: false, reminders: { days: 3, notify: false, hour: 18 } },
 };
 
 describe('readBackup', () => {
@@ -87,6 +87,13 @@ describe('readBackup', () => {
       fallback,
     );
     expect(backup.transactions.map((t) => t.id)).toEqual(['a']);
+  });
+
+  it('keeps notifications off unless this phone already allows them', () => {
+    const settings = { ...valid.settings, reminders: { days: 45, notify: true, hour: 25 } };
+    expect(readBackup(JSON.stringify({ ...valid, settings }), fallback).settings.reminders).toEqual(DEFAULT_REMINDERS);
+    const allowed = { ...fallback, reminders: { ...DEFAULT_REMINDERS, notify: true } };
+    expect(readBackup(JSON.stringify({ ...valid, settings }), allowed).settings.reminders.notify).toBe(true);
   });
 
   it('falls back on unknown settings', () => {

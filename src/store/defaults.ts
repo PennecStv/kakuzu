@@ -1,4 +1,4 @@
-import type { Category, HomeCard } from './types';
+import type { Category, HomeCard, Reminders } from './types';
 
 /** Starter set. Ids are stable so a reset or an import never orphans entries. */
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -15,6 +15,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'other-income', kind: 'income', name: 'Autres revenus', icon: 'more', color: 0 },
 ];
 
+
+export const DEFAULT_REMINDERS: Reminders = { days: 7, notify: false, hour: 9 };
+
+export const REMINDER_DAYS = [1, 3, 7, 14, 30];
+export const REMINDER_HOURS = [8, 9, 12, 18, 20];
 
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'MGA'];
 

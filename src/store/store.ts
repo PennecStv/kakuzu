@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Backup } from './backup';
 import type { SheetImport } from './sheet';
-import { DEFAULT_CATEGORIES } from './defaults';
+import { DEFAULT_CATEGORIES, DEFAULT_REMINDERS } from './defaults';
 import { migrate } from './migrations';
 import type { MonthKey } from '../lib/dates';
 import { dueEntries } from '../lib/recurring';
@@ -47,7 +47,7 @@ export const initialState: State = {
   transactions: [],
   goals: [],
   recurring: [],
-  settings: { theme: 'koi', currency: 'EUR', motion: true, carryOver: true },
+  settings: { theme: 'koi', currency: 'EUR', motion: true, carryOver: true, reminders: DEFAULT_REMINDERS },
 };
 
 export const useStore = create<State & Actions>()(

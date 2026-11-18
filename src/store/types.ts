@@ -63,4 +63,14 @@ export interface Settings {
   home?: HomeCard[];
   /** What is left at the end of a period opens the next one. */
   carryOver: boolean;
+  reminders: Reminders;
+}
+
+export interface Reminders {
+  /** Days before its deadline a goal short of its target turns red, and its notification comes. */
+  days: number;
+  /** Phone notifications, which only the Android app can schedule. */
+  notify: boolean;
+  /** Hour of the day notifications come at, 0 to 23. */
+  hour: number;
 }

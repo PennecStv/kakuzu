@@ -1,8 +1,9 @@
 import { CircleCheck, TriangleAlert } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { today } from '../lib/dates';
-import { LEAD_DAYS, deadlineLabel, urgency } from '../lib/goals';
+import { deadlineLabel, urgency } from '../lib/goals';
 import { formatMoney } from '../lib/money';
+import { useStore } from '../store/store';
 import type { Goal } from '../store/types';
 
 interface Props {
@@ -12,13 +13,14 @@ interface Props {
 }
 
 export function GoalList({ goals, currency, onOpen }: Props) {
+  const days = useStore((s) => s.settings.reminders.days);
   const now = today();
   return (
     <ul className="goals">
       {goals.map((g) => {
         const share = Math.min(1, g.saved / g.target);
         const done = share === 1;
-        const pressing = urgency(g, now, LEAD_DAYS) !== 'none';
+        const pressing = urgency(g, now, days) !== 'none';
         return (
           <li key={g.id}>
             <button
