@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
+import { CashFlowChart } from '../components/CashFlowChart';
 import { GoalList } from '../components/GoalList';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
-import { type Period, dayLabel } from '../lib/dates';
+import { type Period, dayLabel, monthOf, today } from '../lib/dates';
 import { formatSigned } from '../lib/money';
 import { sortRecurring } from '../lib/recurring';
-import { groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
+import { cashFlow, groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
 import { useStore } from '../store/store';
 import type { Goal, Kind, Recurring, Transaction } from '../store/types';
 
@@ -25,6 +26,7 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
   const recurring = useStore((s) => s.recurring);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
+  const carryOver = useStore((s) => s.settings.carryOver);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<Kind | 'all'>('all');
 
@@ -54,9 +56,11 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
 
   if (view === 'flow') {
     const fixed = totals(recurring);
+    const flow = cashFlow(transactions, monthOf(today()), 6);
     return (
       <>
         {switcher}
+        {flow.some((r) => r.income || r.expense) && <CashFlowChart rows={flow} currency={currency} closing={carryOver} />}
         <section className="card" aria-labelledby="recurring-title">
           <h2 id="recurring-title" className="card__title">
             Chaque mois

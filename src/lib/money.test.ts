@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { currencySymbol, formatMoney, formatSigned, parseAmount, toInput } from './money';
+import { currencySymbol, formatAxis, formatMoney, formatSigned, parseAmount, toInput } from './money';
 
 // Intl uses narrow no-break spaces in fr-FR; normalise them to compare.
 const plain = (s: string) => s.replace(/[\u00a0\u202f]/g, ' ');
@@ -69,5 +69,14 @@ describe('formatting', () => {
     expect(toInput(1250, 'EUR')).toBe('12,50');
     expect(toInput(1200, 'EUR')).toBe('12');
     expect(parseAmount(toInput(1999, 'EUR'), 'EUR')).toBe(1999);
+  });
+});
+
+describe('formatAxis', () => {
+  it('drops the currency and compacts large ticks, on both sides of zero', () => {
+    expect(formatAxis(0)).toBe('0');
+    expect(formatAxis(-50000)).toBe('−500');
+    expect(formatAxis(2500000).replace(/\s/g, ' ')).toBe('25 k');
+    expect(formatAxis(-2500000).replace(/\s/g, ' ')).toBe('−25 k');
   });
 });

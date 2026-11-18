@@ -4,11 +4,13 @@ import { toCsv } from './csv';
 import {
   balanceBefore,
   byCategory,
+  cashFlow,
   foldSlices,
   groupByDay,
   inPeriod,
   matchesQuery,
   monthlyTotals,
+  niceRange,
   niceTicks,
   sumByCategory,
   totals,
@@ -174,5 +176,30 @@ describe('balanceBefore', () => {
 
   it('is zero with nothing before', () => {
     expect(balanceBefore(entries, '2025')).toBe(0);
+  });
+});
+
+describe('niceRange', () => {
+  it('spans both sides of zero on one round step', () => {
+    expect(niceRange(-30000, 120000)).toEqual([-50000, 0, 50000, 100000, 150000]);
+    expect(niceRange(-300, -100)).toEqual([-300, -200, -100, 0]);
+    expect(niceRange(0, 0)).toEqual([0]);
+  });
+});
+
+describe('cashFlow', () => {
+  it('gives each month its net and the balance it closes on', () => {
+    const entries = [
+      tx({ kind: 'income', amount: 10000, date: '2026-08-15' }),
+      tx({ kind: 'income', amount: 50000, date: '2026-10-01' }),
+      tx({ amount: 20000, date: '2026-10-20' }),
+      tx({ amount: 45000, date: '2026-11-02' }),
+      tx({ amount: 99999, date: '2026-12-01' }),
+    ];
+    expect(cashFlow(entries, '2026-11', 3)).toEqual([
+      { month: '2026-09', income: 0, expense: 0, net: 0, closing: 10000 },
+      { month: '2026-10', income: 50000, expense: 20000, net: 30000, closing: 40000 },
+      { month: '2026-11', income: 0, expense: 45000, net: -45000, closing: -5000 },
+    ]);
   });
 });
