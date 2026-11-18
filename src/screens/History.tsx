@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
-import { CashFlowChart } from '../components/CashFlowChart';
+import { FlowChart } from '../components/FlowChart';
 import { GoalList } from '../components/GoalList';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
-import { type Period, dayLabel, monthOf, today } from '../lib/dates';
-import { formatSigned } from '../lib/money';
+import { type Period, dayLabel, periodLabel } from '../lib/dates';
+import { formatMoney, formatSigned } from '../lib/money';
 import { sortRecurring } from '../lib/recurring';
-import { cashFlow, groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
-import { useStore } from '../store/store';
+import { byCategory, foldSlices, groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
+import { categoryColor, useStore } from '../store/store';
 import type { Goal, Kind, Recurring, Transaction } from '../store/types';
 
 interface Props {
@@ -26,9 +26,9 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
   const recurring = useStore((s) => s.recurring);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
-  const carryOver = useStore((s) => s.settings.carryOver);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<Kind | 'all'>('all');
+  const [flowKind, setFlowKind] = useState<Kind>('expense');
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const groups = useMemo(
@@ -56,11 +56,44 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
 
   if (view === 'flow') {
     const fixed = totals(recurring);
-    const flow = cashFlow(transactions, monthOf(today()), 6);
+    const scoped = inPeriod(transactions, period);
+    const slices = foldSlices(byCategory(scoped, flowKind));
+    const sum = totals(scoped);
+    const money = (minor: number) => formatMoney(minor, currency);
     return (
       <>
         {switcher}
-        {flow.some((r) => r.income || r.expense) && <CashFlowChart rows={flow} currency={currency} closing={carryOver} />}
+        <PeriodSwitcher period={period} onChange={onPeriod} />
+        <section className="card" aria-labelledby="flow-title">
+          <h2 id="flow-title" className="card__title">
+            {flowKind === 'expense' ? 'Où va l’argent' : 'D’où vient l’argent'}
+          </h2>
+          <Segmented
+            label="Flux"
+            value={flowKind}
+            onChange={setFlowKind}
+            options={[
+              { value: 'expense', label: 'Dépenses' },
+              { value: 'income', label: 'Revenus' },
+            ]}
+          />
+          {slices.length === 0 ? (
+            <p className="empty">{flowKind === 'expense' ? 'Aucune dépense sur cette période.' : 'Aucun revenu sur cette période.'}</p>
+          ) : (
+            // A new key replays the ribbons drawing in when the kind or the period changes.
+            <FlowChart
+              key={`${flowKind}-${period}`}
+              kind={flowKind}
+              slices={slices}
+              total={money(flowKind === 'expense' ? sum.expense : sum.income)}
+              caption={`${periodLabel(period)} · ${slices.length > 1 ? `${slices.length} catégories` : '1 catégorie'}`}
+              categoryOf={(s) => (s.id ? byId.get(s.id) : undefined)}
+              colorOf={(s) => categoryColor(s.id ? byId.get(s.id) : undefined)}
+              labelOf={(s) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres')}
+              money={money}
+            />
+          )}
+        </section>
         <section className="card" aria-labelledby="recurring-title">
           <h2 id="recurring-title" className="card__title">
             Chaque mois

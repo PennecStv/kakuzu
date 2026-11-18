@@ -377,44 +377,111 @@
   stroke-width: 2;
 }
 
-/* ---------- cash-flow chart ---------- */
+/* ---------- flow diagram ---------- */
 
-.flow__readout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 12px;
-  margin: 0 0 12px;
+/* Heights match the constants of FlowChart.tsx: the ribbons are drawn against them. */
+.flow {
+  --source: var(--expense);
+  position: relative;
+  margin-top: 12px;
 }
 
-.flow__readout dt {
+.flow--income {
+  --source: var(--income);
+}
+
+.flow__ribbons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flow__ribbon {
+  fill: none;
+}
+
+.flow__wave {
+  fill: none;
+}
+
+.flow__root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 76px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--source) 40%, var(--hairline));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--source) 8%, var(--surface-solid));
+}
+
+.flow__kind,
+.flow__caption {
   font-size: 12px;
   color: var(--ink-3);
 }
 
-.flow__readout dd {
-  margin: 0;
+.flow__total {
+  font-size: 22px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.flow__readout .is-negative {
-  color: var(--danger);
+.flow--income .flow__total {
+  color: var(--income);
 }
 
-.flow__focus {
-  fill: var(--surface-raised);
+.flow__leaves {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 36px 0 0;
+  padding: 0 0 0 96px;
+  list-style: none;
 }
 
-.flow__zero line {
-  stroke: var(--hairline-strong);
+.flow__leaf {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 10px;
+  height: 56px;
+  padding: 0 10px;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--tile);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--tile) 7%, var(--surface-solid));
 }
 
-/* Money out in ink, money in in the accent, as in the trend chart. */
-.flow__bar {
-  fill: var(--expense);
+.flow__leaf .cat-icon {
+  grid-row: span 2;
+  width: 32px;
+  height: 32px;
 }
 
-.flow__bar.is-gain {
-  fill: var(--income);
+.flow__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.flow__share {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.flow__amount {
+  grid-column: 2 / -1;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- donut and split list ---------- */

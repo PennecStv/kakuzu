@@ -46,24 +46,6 @@ export function monthlyTotals(transactions: Transaction[], end: MonthKey, count:
   return rows;
 }
 
-export interface FlowRow extends MonthTotals {
-  /** Income minus expense of the month. */
-  net: number;
-  /** Balance at the end of the month, everything before it included. */
-  closing: number;
-}
-
-/** Net flow and closing balance of the `count` months ending with `end`, oldest first. */
-export function cashFlow(transactions: Transaction[], end: MonthKey, count: number): FlowRow[] {
-  const rows = monthlyTotals(transactions, end, count);
-  let closing = balanceBefore(transactions, rows[0]?.month ?? end);
-  return rows.map((r) => {
-    const net = r.income - r.expense;
-    closing += net;
-    return { ...r, net, closing };
-  });
-}
-
 /** Axis ticks from 0 to at least `max`, on a 1-2-2.5-5 step, `count` intervals at most. */
 export function niceTicks(max: number, count = 3): number[] {
   if (max <= 0) return [0];
@@ -71,18 +53,6 @@ export function niceTicks(max: number, count = 3): number[] {
   const magnitude = 10 ** Math.floor(Math.log10(raw));
   const step = [1, 2, 2.5, 5, 10].map((f) => f * magnitude).find((s) => s >= raw) ?? 10 * magnitude;
   return Array.from({ length: Math.ceil(max / step) + 1 }, (_, i) => i * step);
-}
-
-/** Ticks spanning `min` to `max` with zero among them, on the steps of niceTicks. */
-export function niceRange(min: number, max: number, count = 4): number[] {
-  const low = Math.min(0, min);
-  const high = Math.max(0, max);
-  if (low === high) return [0];
-  const step = niceTicks(high - low, count)[1] ?? 1;
-  const first = Math.floor(low / step);
-  const last = Math.ceil(high / step);
-  // `+ 0` turns a -0 into 0, so the zero tick has one key.
-  return Array.from({ length: last - first + 1 }, (_, i) => (first + i) * step + 0);
 }
 
 export interface Slice {
