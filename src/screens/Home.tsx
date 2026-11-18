@@ -76,7 +76,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
         </p>
         <dl className="balance__split">
           {carried !== 0 && (
-            <div className="balance__carried">
+            <div className="balance__full">
               <dt>{CARRIED[unit]}</dt>
               <dd className={carried > 0 ? 'is-income' : ''}>{formatSigned(carried, currency)}</dd>
             </div>

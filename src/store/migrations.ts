@@ -2,7 +2,7 @@ import { iconFromKanji } from './icons';
 import type { State } from './store';
 import type { Category, Settings } from './types';
 
-type V2State = Omit<State, 'settings'> & { settings: Omit<Settings, 'carryOver'> };
+type V2State = Omit<State, 'settings' | 'recurring'> & { settings: Omit<Settings, 'carryOver'> };
 type V1Category = Omit<Category, 'icon'> & { glyph?: string };
 type V1State = Omit<V2State, 'categories'> & { categories: V1Category[] };
 
@@ -20,7 +20,7 @@ function fromV1(v1: V1State): V2State {
   };
 }
 
-/** Version 3 carries the balance over from one period to the next, on by default. */
+/** Version 3 adds recurring entries, and carries the balance over from one period to the next by default. */
 function fromV2(v2: V2State): State {
-  return { ...v2, settings: { ...v2.settings, carryOver: true } };
+  return { ...v2, recurring: [], settings: { ...v2.settings, carryOver: true } };
 }

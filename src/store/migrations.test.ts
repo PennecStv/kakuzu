@@ -23,13 +23,15 @@ describe('migrate', () => {
     ]);
   });
 
-  it('turns the carry-over on for version 2 data', () => {
+  it('starts version 2 data with no recurring entry and the carry-over on', () => {
     const v2 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], settings };
-    expect(migrate(v2, 2).settings).toEqual({ ...settings, carryOver: true });
+    const state = migrate(v2, 2);
+    expect(state.settings).toEqual({ ...settings, carryOver: true });
+    expect(state.recurring).toEqual([]);
   });
 
   it('leaves current data alone', () => {
-    const v3 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], settings: { ...settings, carryOver: false } };
+    const v3 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], recurring: [], settings: { ...settings, carryOver: false } };
     expect(migrate(v3, 3)).toBe(v3);
   });
 

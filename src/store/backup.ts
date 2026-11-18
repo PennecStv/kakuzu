@@ -1,6 +1,6 @@
 import { CURRENCIES, homeOrder } from './defaults';
 import { iconFromKanji, isIconId } from './icons';
-import type { Category, Goal, Kind, Settings, ThemeId, Transaction } from './types';
+import type { Category, Goal, Kind, Recurring, Settings, ThemeId, Transaction } from './types';
 
 export interface Backup {
   app: 'kakuzu';
@@ -9,12 +9,14 @@ export interface Backup {
   categories: Category[];
   transactions: Transaction[];
   goals: Goal[];
+  recurring: Recurring[];
   settings: Settings;
 }
 
 const KINDS: Kind[] = ['expense', 'income'];
 const THEMES: ThemeId[] = ['koi', 'butterflies', 'herons', 'frogs', 'jellyfish'];
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const MONTH = /^\d{4}-\d{2}$/;
 const HEX = /^#[0-9a-f]{6}$/i;
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
@@ -40,7 +42,7 @@ function readCategory(v: unknown): Category | null {
 
 function readTransaction(v: unknown): Transaction | null {
   if (!isObject(v)) return null;
-  const { id, kind, amount, categoryId, date, note, createdAt } = v;
+  const { id, kind, amount, categoryId, date, note, createdAt, recurringId } = v;
   if (typeof id !== 'string' || typeof categoryId !== 'string') return null;
   if (!KINDS.includes(kind as Kind) || !isMinor(amount)) return null;
   if (typeof date !== 'string' || !DAY.test(date)) return null;
@@ -52,7 +54,17 @@ function readTransaction(v: unknown): Transaction | null {
     date,
     note: typeof note === 'string' ? note : '',
     createdAt: typeof createdAt === 'number' ? createdAt : 0,
+    ...(typeof recurringId === 'string' ? { recurringId } : {}),
   };
+}
+
+function readRecurring(v: unknown): Recurring | null {
+  if (!isObject(v)) return null;
+  const { id, kind, amount, categoryId, note, next } = v;
+  if (typeof id !== 'string' || typeof categoryId !== 'string') return null;
+  if (!KINDS.includes(kind as Kind) || !isMinor(amount)) return null;
+  if (typeof next !== 'string' || !MONTH.test(next)) return null;
+  return { id, kind: kind as Kind, amount, categoryId, note: typeof note === 'string' ? note : '', next };
 }
 
 function readGoal(v: unknown): Goal | null {
@@ -87,6 +99,9 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
   if (categories.length === 0) throw new Error('La sauvegarde ne contient aucune catégorie.');
   // Files saved before goals existed have none.
   const goals = Array.isArray(data.goals) ? data.goals.map(readGoal).filter((g): g is Goal => g !== null) : [];
+  const recurring = Array.isArray(data.recurring)
+    ? data.recurring.map(readRecurring).filter((r): r is Recurring => r !== null && known.has(r.categoryId))
+    : [];
 
   const s = isObject(data.settings) ? data.settings : {};
   const settings: Settings = {
@@ -97,5 +112,5 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     home: Array.isArray(s.home) ? homeOrder(s.home) : fallback.home,
     carryOver: typeof s.carryOver === 'boolean' ? s.carryOver : fallback.carryOver,
   };
-  return { app: 'kakuzu', version: 2, categories, transactions, goals, settings };
+  return { app: 'kakuzu', version: 2, categories, transactions, goals, recurring, settings };
 }

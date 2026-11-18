@@ -1,4 +1,4 @@
-import type { DayKey } from '../lib/dates';
+import type { DayKey, MonthKey } from '../lib/dates';
 import type { IconId } from './icons';
 
 export type Kind = 'expense' | 'income';
@@ -25,6 +25,20 @@ export interface Transaction {
   date: DayKey;
   note: string;
   createdAt: number;
+  /** The recurring entry that added it, if any. */
+  recurringId?: string;
+}
+
+/** An entry added on the 1st of every month. */
+export interface Recurring {
+  id: string;
+  kind: Kind;
+  /** Positive amount in minor units. */
+  amount: number;
+  categoryId: string;
+  note: string;
+  /** Next month to add it to: moved on as soon as it is added, so a month never gets it twice. */
+  next: MonthKey;
 }
 
 /** Money put aside by hand for a project, outside the entries. */

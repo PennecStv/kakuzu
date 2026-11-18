@@ -19,7 +19,7 @@ export function balanceBefore(transactions: Transaction[], period: Period): numb
   return balance;
 }
 
-export function totals(transactions: Transaction[]): Totals {
+export function totals(transactions: Pick<Transaction, 'kind' | 'amount'>[]): Totals {
   let income = 0;
   let expense = 0;
   for (const t of transactions) {

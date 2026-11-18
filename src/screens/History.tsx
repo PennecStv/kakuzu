@@ -5,21 +5,24 @@ import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
 import { type Period, dayLabel } from '../lib/dates';
 import { formatSigned } from '../lib/money';
-import { groupByDay, inPeriod, matchesQuery } from '../lib/stats';
+import { sortRecurring } from '../lib/recurring';
+import { groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
 import { useStore } from '../store/store';
-import type { Goal, Kind, Transaction } from '../store/types';
+import type { Goal, Kind, Recurring, Transaction } from '../store/types';
 
 interface Props {
   period: Period;
   onPeriod: (p: Period) => void;
   onOpen: (t: Transaction) => void;
   onGoal: (goal?: Goal) => void;
+  onRecurring: (recurring?: Recurring) => void;
 }
 
-export function History({ period, onPeriod, onOpen, onGoal }: Props) {
-  const [view, setView] = useState<'entries' | 'goals'>('entries');
+export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props) {
+  const [view, setView] = useState<'entries' | 'goals' | 'flow'>('entries');
   const transactions = useStore((s) => s.transactions);
   const goals = useStore((s) => s.goals);
+  const recurring = useStore((s) => s.recurring);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const [query, setQuery] = useState('');
@@ -44,9 +47,54 @@ export function History({ period, onPeriod, onOpen, onGoal }: Props) {
       options={[
         { value: 'entries', label: 'Opérations' },
         { value: 'goals', label: 'Objectifs' },
+        { value: 'flow', label: 'Cash-flow' },
       ]}
     />
   );
+
+  if (view === 'flow') {
+    const fixed = totals(recurring);
+    return (
+      <>
+        {switcher}
+        <section className="card" aria-labelledby="recurring-title">
+          <h2 id="recurring-title" className="card__title">
+            Chaque mois
+          </h2>
+          {recurring.length > 0 ? (
+            <>
+              <ul className="tx-list">
+                {sortRecurring(recurring).map((r) => (
+                  <TransactionRow key={r.id} transaction={r} category={byId.get(r.categoryId)} currency={currency} onOpen={onRecurring} />
+                ))}
+              </ul>
+              <dl className="balance__split recurring__sum">
+                <div>
+                  <dt>Revenus</dt>
+                  <dd className={fixed.income ? 'is-income' : ''}>{formatSigned(fixed.income, currency)}</dd>
+                </div>
+                <div>
+                  <dt>Dépenses</dt>
+                  <dd>{formatSigned(-fixed.expense, currency)}</dd>
+                </div>
+                <div className="balance__full">
+                  <dt>Reste chaque mois</dt>
+                  <dd className={fixed.balance > 0 ? 'is-income' : fixed.balance < 0 ? 'is-negative' : ''}>
+                    {formatSigned(fixed.balance, currency)}
+                  </dd>
+                </div>
+              </dl>
+            </>
+          ) : (
+            <p className="hint">Un salaire, un loyer, un abonnement : ajoutés le 1er de chaque mois, puis modifiables comme les autres opérations.</p>
+          )}
+        </section>
+        <button type="button" className="button button--wide" onClick={() => onRecurring()}>
+          Nouvelle opération récurrente
+        </button>
+      </>
+    );
+  }
 
   if (view === 'goals') {
     return (

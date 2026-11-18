@@ -50,6 +50,16 @@ describe('readBackup', () => {
     ]);
   });
 
+  it('reads recurring entries, and none from older files', () => {
+    expect(readBackup(JSON.stringify(valid), fallback).recurring).toEqual([]);
+    const recurring = [
+      { id: 'r1', kind: 'expense', amount: 65000, categoryId: 'food', note: 'Panier', next: '2026-12' },
+      { id: 'r2', kind: 'expense', amount: 65000, categoryId: 'ghost', note: '', next: '2026-12' },
+      { id: 'r3', kind: 'expense', amount: 65000, categoryId: 'food', note: '', next: '12/2026' },
+    ];
+    expect(readBackup(JSON.stringify({ ...valid, recurring }), fallback).recurring).toEqual([recurring[0]]);
+  });
+
   it('cleans the home card order', () => {
     const settings = { ...valid.settings, home: ['trend', 'nope', 'trend', 'goals'] };
     expect(readBackup(JSON.stringify({ ...valid, settings }), fallback).settings.home).toEqual(['trend', 'goals', 'balance', 'split', 'recent']);

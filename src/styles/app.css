@@ -261,8 +261,16 @@
   border-top: 1px solid var(--hairline);
 }
 
-.balance__carried {
+.balance__full {
   grid-column: 1 / -1;
+}
+
+.balance__split .is-negative {
+  color: var(--danger);
+}
+
+.recurring__sum {
+  margin-top: 8px;
 }
 
 .balance__split dt {
@@ -579,6 +587,14 @@
 
 .tx__sub {
   font-size: 12px;
+  color: var(--ink-3);
+}
+
+.tx__repeat {
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: -2px;
   color: var(--ink-3);
 }
 
