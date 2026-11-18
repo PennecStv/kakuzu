@@ -40,10 +40,14 @@ describe('readBackup', () => {
   it('reads goals, and none from older files', () => {
     expect(readBackup(JSON.stringify(valid), fallback).goals).toEqual([]);
     const goals = [
-      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000 },
+      { id: 'pc', name: 'PC neuf', target: 120000, saved: 30000, deadline: '2026-12-31' },
       { id: 'bad', name: 'Sans cible', target: 0, saved: 0 },
+      { id: 'trip', name: 'Voyage', target: 90000, saved: 0, deadline: '31/12/2026' },
     ];
-    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([goals[0]]);
+    expect(readBackup(JSON.stringify({ ...valid, goals }), fallback).goals).toEqual([
+      goals[0],
+      { id: 'trip', name: 'Voyage', target: 90000, saved: 0 },
+    ]);
   });
 
   it('cleans the home card order', () => {

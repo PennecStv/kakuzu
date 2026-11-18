@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { currencySymbol, formatMoney, parseAmount, toInput } from '../lib/money';
 import { useStore } from '../store/store';
@@ -20,6 +21,7 @@ export function GoalForm({ editing, onDone }: Props) {
   const [moveError, setMoveError] = useState('');
   const [name, setName] = useState(editing?.name ?? '');
   const [target, setTarget] = useState(editing ? toInput(editing.target, currency) : '');
+  const [deadline, setDeadline] = useState(editing?.deadline ?? '');
   const [error, setError] = useState('');
   const [confirming, setConfirming] = useState(false);
 
@@ -50,8 +52,9 @@ export function GoalForm({ editing, onDone }: Props) {
       setError('Montant visé invalide.');
       return;
     }
-    if (editing) updateGoal(editing.id, { name: name.trim(), target: minor });
-    else addGoal({ name: name.trim(), target: minor, saved: 0 });
+    const fields = { name: name.trim(), target: minor, deadline: deadline || undefined };
+    if (editing) updateGoal(editing.id, fields);
+    else addGoal({ ...fields, saved: 0 });
     onDone(editing ? 'Objectif modifié' : 'Objectif créé');
   };
 
@@ -118,6 +121,18 @@ export function GoalForm({ editing, onDone }: Props) {
             placeholder={`500 ${currencySymbol(currency)}`}
           />
         </label>
+
+        <div className="field">
+          <label htmlFor="goal-deadline">Date butoir, facultative</label>
+          <div className="row">
+            <input id="goal-deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+            {deadline && (
+              <button type="button" className="icon-button" aria-label="Retirer la date butoir" onClick={() => setDeadline('')}>
+                <X aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </div>
 
         <p className="form__error" role="alert">
           {error}

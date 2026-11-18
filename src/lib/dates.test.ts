@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayLabel, lastMonth, monthLabel, monthOf, periodLabel, shiftMonth, shiftPeriod, unitOf, withUnit } from './dates';
+import { dayLabel, daysBetween, lastMonth, monthLabel, monthOf, periodLabel, shortDay, shiftMonth, shiftPeriod, unitOf, withUnit } from './dates';
 
 describe('periods', () => {
   it('reads the unit from the length', () => {
@@ -60,5 +60,19 @@ describe('dayLabel', () => {
 
   it('spells out older days', () => {
     expect(dayLabel('2026-11-10', '2026-11-16')).toBe('Mardi 10 novembre');
+  });
+});
+
+describe('days', () => {
+  it('counts whole days, across a daylight saving change', () => {
+    expect(daysBetween('2026-11-18', '2026-11-25')).toBe(7);
+    expect(daysBetween('2026-11-18', '2026-11-17')).toBe(-1);
+    expect(daysBetween('2026-03-28', '2026-03-30')).toBe(2);
+    expect(daysBetween('2026-12-31', '2027-01-01')).toBe(1);
+  });
+
+  it('gives a short date, with the year only when it differs', () => {
+    expect(shortDay('2026-12-31', '2026-11-18')).toBe('31 déc.');
+    expect(shortDay('2027-01-15', '2026-11-18')).toBe('15 janv. 2027');
   });
 });

@@ -57,9 +57,15 @@ function readTransaction(v: unknown): Transaction | null {
 
 function readGoal(v: unknown): Goal | null {
   if (!isObject(v)) return null;
-  const { id, name, target, saved } = v;
+  const { id, name, target, saved, deadline } = v;
   if (typeof id !== 'string' || typeof name !== 'string' || !isMinor(target)) return null;
-  return { id, name, target, saved: Number.isInteger(saved) ? Math.max(0, saved as number) : 0 };
+  return {
+    id,
+    name,
+    target,
+    saved: Number.isInteger(saved) ? Math.max(0, saved as number) : 0,
+    ...(typeof deadline === 'string' && DAY.test(deadline) ? { deadline } : {}),
+  };
 }
 
 /** Validates an imported file. Throws a message meant for the user. */

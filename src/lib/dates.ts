@@ -18,6 +18,16 @@ export function parseDay(day: DayKey): Date {
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
 }
 
+/** Whole days from `from` to `to`, negative when `to` comes first. */
+export function daysBetween(from: DayKey, to: DayKey): number {
+  // UTC midnights: a daylight saving change would otherwise make a day 23 or 25 hours long.
+  const utc = (day: DayKey) => {
+    const [y, m, d] = day.split('-').map(Number);
+    return Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+  };
+  return Math.round((utc(to) - utc(from)) / 86_400_000);
+}
+
 export function monthOf(day: DayKey): MonthKey {
   return day.slice(0, 7);
 }
@@ -77,6 +87,14 @@ export function periodLabel(period: Period, now: DayKey = today()): string {
   const unit = unitOf(period);
   if (unit === 'year') return period;
   return unit === 'month' ? monthLabel(period) : dayLabel(period, now);
+}
+
+const shortDayFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' });
+const shortDayYearFormat = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** "31 déc.", with the year when it is not the current one. */
+export function shortDay(day: DayKey, now: DayKey = today()): string {
+  return (day.slice(0, 4) === now.slice(0, 4) ? shortDayFormat : shortDayYearFormat).format(parseDay(day));
 }
 
 export function dayLabel(day: DayKey, now: DayKey = today()): string {

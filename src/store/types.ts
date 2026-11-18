@@ -35,6 +35,8 @@ export interface Goal {
   target: number;
   /** Amount put aside so far, in minor units, never negative. */
   saved: number;
+  /** Day the target should be reached by. */
+  deadline?: DayKey;
 }
 
 export type HomeCard = 'balance' | 'split' | 'goals' | 'trend' | 'recent';
