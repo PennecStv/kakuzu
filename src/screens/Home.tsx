@@ -9,7 +9,7 @@ import { TrendChart } from '../components/TrendChart';
 import { TransactionRow } from '../components/TransactionRow';
 import { type Period, type Unit, lastMonth, unitOf } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
-import { type Slice, byCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
+import { type Slice, balanceBefore, byCategory, foldSlices, groupByDay, inPeriod, monthlyTotals, sliceKey, totals } from '../lib/stats';
 import { homeOrder } from '../store/defaults';
 import { categoryColor, useStore } from '../store/store';
 import type { Goal, HomeCard, Kind, Transaction } from '../store/types';
@@ -25,6 +25,12 @@ interface Props {
 
 const BALANCE: Record<Unit, string> = { day: 'Solde du jour', month: 'Solde du mois', year: 'Solde de l’année' };
 
+const CARRIED: Record<Unit, string> = {
+  day: 'Report de la veille',
+  month: 'Report du mois précédent',
+  year: 'Report de l’année précédente',
+};
+
 const SPLIT: Record<Kind, { caption: string; empty: string; add: string }> = {
   expense: { caption: 'dépensés', empty: 'Aucune dépense sur cette période.', add: 'Ajouter une dépense' },
   income: { caption: 'reçus', empty: 'Aucun revenu sur cette période.', add: 'Ajouter un revenu' },
@@ -36,12 +42,14 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
   const order = useStore((s) => s.settings.home);
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
+  const carryOver = useStore((s) => s.settings.carryOver);
   const [active, setActive] = useState<string | null>(null);
   const [kind, setKind] = useState<Kind>('expense');
   const unit = unitOf(period);
 
   const byId = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const scoped = useMemo(() => inPeriod(transactions, period), [transactions, period]);
+  const carried = useMemo(() => (carryOver ? balanceBefore(transactions, period) : 0), [carryOver, transactions, period]);
   const trend = useMemo(() => monthlyTotals(transactions, lastMonth(period), 6), [transactions, period]);
   const { sum, breakdown, slices, recent } = useMemo(() => {
     const breakdown = byCategory(scoped, kind);
@@ -63,8 +71,16 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
     balance: (
       <section className="card balance" aria-label={BALANCE[unit]}>
         <p className="label">{BALANCE[unit]}</p>
-        <p className={`balance__value${sum.balance < 0 ? ' is-negative' : ''}`}>{formatSigned(sum.balance, currency)}</p>
+        <p className={`balance__value${sum.balance + carried < 0 ? ' is-negative' : ''}`}>
+          {formatSigned(sum.balance + carried, currency)}
+        </p>
         <dl className="balance__split">
+          {carried !== 0 && (
+            <div className="balance__carried">
+              <dt>{CARRIED[unit]}</dt>
+              <dd className={carried > 0 ? 'is-income' : ''}>{formatSigned(carried, currency)}</dd>
+            </div>
+          )}
           <div>
             <dt>Revenus</dt>
             <dd className={sum.income ? 'is-income' : ''}>{formatSigned(sum.income, currency)}</dd>

@@ -11,6 +11,14 @@ export function inPeriod(transactions: Transaction[], period: Period): Transacti
   return transactions.filter((t) => t.date.startsWith(period));
 }
 
+/** What every entry dated before the period leaves: the balance it opens with when it is carried over. */
+export function balanceBefore(transactions: Transaction[], period: Period): number {
+  let balance = 0;
+  // A period is a prefix of its days, so every earlier day sorts before it and none of its own does.
+  for (const t of transactions) if (t.date < period) balance += t.kind === 'income' ? t.amount : -t.amount;
+  return balance;
+}
+
 export function totals(transactions: Transaction[]): Totals {
   let income = 0;
   let expense = 0;

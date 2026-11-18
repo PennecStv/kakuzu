@@ -45,4 +45,6 @@ export interface Settings {
   motion: boolean;
   /** Order of the home cards. Absent until the user changes it: read it through homeOrder. */
   home?: HomeCard[];
+  /** What is left at the end of a period opens the next one. */
+  carryOver: boolean;
 }

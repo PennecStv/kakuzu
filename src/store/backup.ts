@@ -89,6 +89,7 @@ export function readBackup(json: string, fallback: Settings): Omit<Backup, 'expo
     currency: CURRENCIES.includes(s.currency as string) ? (s.currency as string) : fallback.currency,
     motion: typeof s.motion === 'boolean' ? s.motion : fallback.motion,
     home: Array.isArray(s.home) ? homeOrder(s.home) : fallback.home,
+    carryOver: typeof s.carryOver === 'boolean' ? s.carryOver : fallback.carryOver,
   };
   return { app: 'kakuzu', version: 2, categories, transactions, goals, settings };
 }

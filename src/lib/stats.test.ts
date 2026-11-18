@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../store/types';
 import { toCsv } from './csv';
 import {
+  balanceBefore,
   byCategory,
   foldSlices,
   groupByDay,
@@ -149,5 +150,29 @@ describe('niceTicks', () => {
 
   it('has a single tick for an empty chart', () => {
     expect(niceTicks(0)).toEqual([0]);
+  });
+});
+
+describe('balanceBefore', () => {
+  const entries = [
+    tx({ kind: 'income', amount: 200000, date: '2025-12-31' }),
+    tx({ amount: 150000, date: '2026-10-05' }),
+    tx({ amount: 5000, date: '2026-10-31' }),
+    tx({ kind: 'income', amount: 9900, date: '2026-11-01' }),
+    tx({ amount: 1000, date: '2026-11-18' }),
+  ];
+
+  it('sums what came before a month, a day or a year', () => {
+    expect(balanceBefore(entries, '2026-11')).toBe(45000);
+    expect(balanceBefore(entries, '2026-11-18')).toBe(54900);
+    expect(balanceBefore(entries, '2026')).toBe(200000);
+  });
+
+  it('carries a deficit too', () => {
+    expect(balanceBefore([tx({ amount: 3000, date: '2026-10-02' })], '2026-11')).toBe(-3000);
+  });
+
+  it('is zero with nothing before', () => {
+    expect(balanceBefore(entries, '2025')).toBe(0);
   });
 });

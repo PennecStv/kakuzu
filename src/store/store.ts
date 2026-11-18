@@ -37,7 +37,7 @@ export const initialState: State = {
   categories: DEFAULT_CATEGORIES,
   transactions: [],
   goals: [],
-  settings: { theme: 'koi', currency: 'EUR', motion: true },
+  settings: { theme: 'koi', currency: 'EUR', motion: true, carryOver: true },
 };
 
 export const useStore = create<State & Actions>()(
@@ -95,7 +95,7 @@ export const useStore = create<State & Actions>()(
     }),
     {
       name: 'kakuzu',
-      version: 2,
+      version: 3,
       migrate,
       storage: createJSONStorage(() => localStorage),
       // A state saved before goals existed has none: the default merge keeps the empty list.

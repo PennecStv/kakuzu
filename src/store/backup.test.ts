@@ -3,7 +3,7 @@ import { readBackup } from './backup';
 import { homeOrder } from './defaults';
 import type { Settings } from './types';
 
-const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true };
+const fallback: Settings = { theme: 'koi', currency: 'EUR', motion: true, carryOver: true };
 
 const valid = {
   app: 'kakuzu',
@@ -12,7 +12,7 @@ const valid = {
   transactions: [
     { id: 'a', kind: 'expense', amount: 1250, categoryId: 'food', date: '2026-11-03', note: 'Pain', createdAt: 1 },
   ],
-  settings: { theme: 'frogs', currency: 'USD', motion: false },
+  settings: { theme: 'frogs', currency: 'USD', motion: false, carryOver: false },
 };
 
 describe('readBackup', () => {

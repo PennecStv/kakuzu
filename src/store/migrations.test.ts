@@ -15,15 +15,22 @@ describe('migrate', () => {
       transactions: [],
       settings,
     };
-    expect(migrate(v1, 1).categories).toEqual([
+    const state = migrate(v1, 1);
+    expect(state.settings.carryOver).toBe(true);
+    expect(state.categories).toEqual([
       { id: 'home', kind: 'expense', name: 'Logement', icon: 'house', color: 0 },
       { id: 'x', kind: 'expense', name: 'Perso', icon: 'tag', color: 3, budget: 5000 },
     ]);
   });
 
+  it('turns the carry-over on for version 2 data', () => {
+    const v2 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], settings };
+    expect(migrate(v2, 2).settings).toEqual({ ...settings, carryOver: true });
+  });
+
   it('leaves current data alone', () => {
-    const v2 = { categories: DEFAULT_CATEGORIES, transactions: [], settings };
-    expect(migrate(v2, 2)).toBe(v2);
+    const v3 = { categories: DEFAULT_CATEGORIES, transactions: [], goals: [], settings: { ...settings, carryOver: false } };
+    expect(migrate(v3, 3)).toBe(v3);
   });
 
   it('gives the version 1 defaults the icons of the new defaults', () => {

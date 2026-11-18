@@ -248,6 +248,13 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
             ))}
           </ol>
         )}
+        <label className="switch">
+          <span>
+            Reporter le solde
+            <small>Le solde d’un mois, même négatif, passe au suivant.</small>
+          </span>
+          <input type="checkbox" checked={settings.carryOver} onChange={(e) => setSettings({ carryOver: e.target.checked })} />
+        </label>
       </section>
 
       <section className="card" aria-labelledby="data-title">
