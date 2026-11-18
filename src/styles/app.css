@@ -960,6 +960,81 @@
   background: var(--accent-ink);
 }
 
+.card__title + .switch {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.switch > span {
+  flex: 1;
+}
+
+.switch__icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--ink-2);
+  transition: color 0.2s;
+}
+
+.switch.is-on .switch__icon {
+  color: var(--accent);
+  animation: ring 0.5s ease-out;
+}
+
+@keyframes ring {
+  25% {
+    transform: rotate(16deg);
+  }
+  50% {
+    transform: rotate(-12deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+
+/* Unfolds like a dropdown. */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease-out;
+}
+
+.reveal.is-open {
+  grid-template-rows: 1fr;
+}
+
+.reveal > div > :first-child {
+  margin-top: 8px;
+}
+
+.reveal > div {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.2s,
+    transform 0.25s ease-out;
+}
+
+.reveal.is-open > div {
+  opacity: 1;
+  transform: none;
+  /* Clipped while it unfolds, then a dropdown list inside can spill out of it. */
+  overflow: visible;
+  animation: clip 0.25s;
+}
+
+@keyframes clip {
+  from,
+  to {
+    overflow: hidden;
+  }
+}
+
 /* ---------- themes ---------- */
 
 .themes {
@@ -1029,7 +1104,7 @@
   opacity: 0.35;
 }
 
-.card > .label + .dropdown {
+.label + .dropdown {
   margin-top: 6px;
 }
 
