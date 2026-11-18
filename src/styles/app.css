@@ -6,6 +6,57 @@
   max-width: 520px;
   margin: 0 auto;
   padding: calc(var(--safe-top) + 12px) var(--gutter) calc(var(--nav-h) + var(--safe-bottom) + 32px);
+  /* A page sliding in must not make the screen scroll sideways. */
+  overflow-x: clip;
+}
+
+/* ---------- tab slide ---------- */
+
+/* The page going out is pinned where it was on screen, cut at the bottom of the screen. */
+.page--leaving {
+  position: fixed;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.page--from-right {
+  animation: page-from-right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.page--from-left {
+  animation: page-from-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.page--to-left {
+  animation: page-to-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.page--to-right {
+  animation: page-to-right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes page-from-right {
+  from {
+    transform: translateX(calc(100% + var(--gutter)));
+  }
+}
+
+@keyframes page-from-left {
+  from {
+    transform: translateX(calc(-100% - var(--gutter)));
+  }
+}
+
+@keyframes page-to-left {
+  to {
+    transform: translateX(calc(-100% - var(--gutter)));
+  }
+}
+
+@keyframes page-to-right {
+  to {
+    transform: translateX(calc(100% + var(--gutter)));
+  }
 }
 
 .screen {

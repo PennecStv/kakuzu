@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { THEMES } from './ascii/themes';
 import { AsciiBackground } from './components/AsciiBackground';
 import { BottomNav, type Tab } from './components/BottomNav';
@@ -25,6 +25,18 @@ const TITLES: Record<Exclude<Tab, 'home'>, string> = {
   settings: 'Réglages',
 };
 
+/** The tabs as the bar lays them out: a page slides in from the side of its tab. */
+const TAB_ORDER: Tab[] = ['home', 'history', 'categories', 'settings'];
+
+/** The page sliding out, pinned where it was on screen while the next one slides in. */
+interface Leaving {
+  tab: Tab;
+  back: boolean;
+  top: number;
+  left: number;
+  width: number;
+}
+
 export function App() {
   const theme = useStore((s) => s.settings.theme);
   const motion = useStore((s) => s.settings.motion);
@@ -33,6 +45,8 @@ export function App() {
   const restoreTransaction = useStore((s) => s.restoreTransaction);
 
   const [tab, setTab] = useState<Tab>('home');
+  const [leaving, setLeaving] = useState<Leaving | null>(null);
+  const pages = useRef<HTMLElement>(null);
   const [period, setPeriod] = useState(() => monthOf(today()));
   const [txSheet, setTxSheet] = useState<{ editing?: Transaction; kind?: Kind } | null>(null);
   const [catSheet, setCatSheet] = useState<{ kind: Kind; editing?: Category } | null>(null);
@@ -49,6 +63,11 @@ export function App() {
   }, [theme]);
 
   const go = (next: Tab) => {
+    const box = pages.current?.getBoundingClientRect();
+    if (next !== tab && box && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const back = TAB_ORDER.indexOf(next) < TAB_ORDER.indexOf(tab);
+      setLeaving({ tab, back, top: box.top, left: box.left, width: box.width });
+    }
     setTab(next);
     window.scrollTo({ top: 0 });
   };
@@ -61,29 +80,47 @@ export function App() {
     notify('Opération supprimée', { label: 'Annuler', run: () => restoreTransaction(t) });
   };
 
+  const screens: Record<Tab, () => ReactNode> = {
+    home: () => (
+      <Home
+        period={period}
+        onPeriod={setPeriod}
+        onOpen={openTransaction}
+        onAdd={(kind) => setTxSheet({ kind })}
+        onSeeAll={() => go('history')}
+        onGoal={(editing) => setGoalSheet({ editing })}
+      />
+    ),
+    history: () => <History period={period} onPeriod={setPeriod} onOpen={openTransaction} onGoal={(editing) => setGoalSheet({ editing })} />,
+    categories: () => <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />,
+    settings: () => <Settings notify={notify} />,
+  };
+
   return (
     <>
       <AsciiBackground theme={theme} motion={motion} />
 
       <div className="app">
-        <header className="top">
-          <h1>{tab === 'home' ? <Wordmark /> : TITLES[tab]}</h1>
-        </header>
-
-        <main className="screen">
-          {tab === 'home' && (
-            <Home
-              period={period}
-              onPeriod={setPeriod}
-              onOpen={openTransaction}
-              onAdd={(kind) => setTxSheet({ kind })}
-              onSeeAll={() => go('history')}
-              onGoal={(editing) => setGoalSheet({ editing })}
-            />
-          )}
-          {tab === 'history' && <History period={period} onPeriod={setPeriod} onOpen={openTransaction} onGoal={(editing) => setGoalSheet({ editing })} />}
-          {tab === 'categories' && <Categories period={period} onEdit={(kind, editing) => setCatSheet({ kind, editing })} />}
-          {tab === 'settings' && <Settings notify={notify} />}
+        {/* Pages stay in tab order in the DOM: moving a node would restart its animations and drop focus. */}
+        <main ref={pages}>
+          {TAB_ORDER.filter((t) => t === tab || t === leaving?.tab).map((t) => {
+            const out = t !== tab && leaving;
+            const slide = out ? `page--leaving page--to-${out.back ? 'right' : 'left'}` : leaving ? `page--from-${leaving.back ? 'left' : 'right'}` : '';
+            return (
+              <div
+                key={t}
+                className={`page ${slide}`}
+                style={out ? { top: out.top, left: out.left, width: out.width } : undefined}
+                inert={Boolean(out)}
+                onAnimationEnd={(e) => out && e.target === e.currentTarget && setLeaving(null)}
+              >
+                <header className="top">
+                  <h1>{t === 'home' ? <Wordmark /> : TITLES[t]}</h1>
+                </header>
+                <div className="screen">{screens[t]()}</div>
+              </div>
+            );
+          })}
         </main>
       </div>
 
