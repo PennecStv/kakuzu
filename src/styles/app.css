@@ -29,7 +29,9 @@
   letter-spacing: -0.01em;
 }
 
+/* The K and the letters are sized from one value so they keep their proportions. */
 .wordmark {
+  --size: 38px;
   display: inline-flex;
   align-items: flex-end;
 }
@@ -37,15 +39,15 @@
 /* Seven lines of glyphs, a third taller than the lowercase ascenders: a drop cap. */
 .wordmark__k {
   margin: 0;
-  font: 700 10.5px/8.1px var(--font);
+  font: 700 calc(var(--size) * 0.228) / calc(var(--size) * 0.176) var(--font);
   color: var(--accent);
 }
 
 .wordmark__rest {
   position: relative;
   isolation: isolate;
-  margin-left: 4px;
-  font-size: 46px;
+  margin-left: calc(var(--size) * 0.087);
+  font-size: var(--size);
   font-weight: 800;
   line-height: 0.74;
   letter-spacing: -0.06em;
