@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { type Slice, sliceKey } from '../lib/stats';
 
 interface Props {
@@ -49,6 +50,9 @@ export function Donut({ slices, colorOf, labelOf, active, onSelect, center, acti
             strokeWidth: key === active ? THICKNESS + 6 : THICKNESS,
             className: `donut__slice${dim ? ' is-dim' : ''}`,
             onClick: () => onSelect(key === active ? null : key),
+            // Each segment draws in after the one before it: one sweep around the ring.
+            pathLength: 1,
+            style: { '--at': (start ?? 0) / (Math.PI * 2), '--len': s.share } as CSSProperties,
           };
           return slices.length === 1 ? (
             <circle key={key} cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" {...props}>

@@ -205,8 +205,8 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         </div>
         <label className="switch">
           <span>
-            Animer le fond
-            <small>Désactiver économise la batterie.</small>
+            Animations
+            <small>Le fond, l’arrivée des cartes et des graphiques. Désactiver économise la batterie.</small>
           </span>
           <input type="checkbox" checked={settings.motion} onChange={(e) => setSettings({ motion: e.target.checked })} />
         </label>

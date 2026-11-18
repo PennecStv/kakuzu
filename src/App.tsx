@@ -134,7 +134,8 @@ export function App() {
     <>
       <AsciiBackground theme={theme} motion={motion} />
 
-      <div className="app">
+      {/* is-still drops the entrances of cards and charts along with the scene. */}
+      <div className={motion ? 'app' : 'app is-still'}>
         {/* Pages stay in tab order in the DOM: moving a node would restart its animations and drop focus. */}
         <main ref={pages}>
           {TAB_ORDER.filter((t) => t === tab || t === leaving?.tab).map((t) => {
