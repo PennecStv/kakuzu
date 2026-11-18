@@ -37,10 +37,10 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 
 | Écran      | Contenu                                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------------------- |
-| Accueil    | Solde du jour, du mois ou de l'année, revenus et dépenses, objectifs, courbe sur six mois, camembert des dépenses ou des revenus par catégorie, budgets restants, dernières opérations |
-| Suivi      | Opérations du jour, du mois ou de l'année groupées par jour, recherche par note ou catégorie, filtre dépenses / revenus ; objectifs d'épargne |
+| Accueil    | Solde du jour, du mois ou de l'année avec le report de la période d'avant, revenus et dépenses, objectifs, courbe sur six mois, camembert des dépenses ou des revenus par catégorie, budgets restants, dernières opérations |
+| Suivi      | Opérations du jour, du mois ou de l'année groupées par jour, recherche par note ou catégorie, filtre dépenses / revenus ; objectifs d'épargne ; cash-flow : opérations récurrentes et ce qui reste de chaque mois |
 | Catégories | Catégories de dépenses et de revenus, icône, couleur, budget mensuel                                          |
-| Réglages   | Thème animé, devise, export JSON et CSV, import d'une sauvegarde ou d'un tableur (Excel, CSV), remise à zéro |
+| Réglages   | Thème animé, devise, report du solde, alerte et notifications des objectifs, export JSON et CSV, import d'une sauvegarde ou d'un tableur (Excel, CSV), remise à zéro |
 
 - **Ajout en trois gestes** : le bouton `+` ouvre une feuille avec le pavé numérique déjà ouvert, on choisit la catégorie et on valide.
 - **Un message à chaque ajout** : vert pour un revenu (« Racks on racks on racks... »), rouge pour une dépense (« Not stonks... »).
@@ -50,7 +50,12 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 - **Camembert lisible** : six parts au plus, la fin de liste est regroupée dans « Autres ». Toucher une part, ou sa ligne, affiche son montant au centre.
 - **Export pour tableur** : le CSV utilise le point-virgule et la virgule décimale, Excel en français l'ouvre tel quel.
 - **Import de tableur** : un fichier .xlsx ou .csv avec les colonnes Date, Type, Catégorie, Montant, Note s'ajoute aux opérations. Le bouton « i » à côté de l'import affiche le format attendu.
-- **Objectifs** : « PC neuf », « Livret A 500 € » ; on verse ou retire à la main, sans toucher au solde.
+- **Objectifs** : « PC neuf », « Livret A 500 € » ; on verse ou retire à la main, sans toucher au solde. Une date butoir facultative fait passer l'objectif en rouge quand elle approche et qu'il n'est pas atteint.
+- **Report du solde** : ce qui reste à la fin d'un mois, même négatif, ouvre le mois suivant. Activé par défaut, il se coupe dans les réglages.
+- **Opérations récurrentes** : un salaire, un loyer, un abonnement s'ajoutent seuls le 1er de chaque mois, et se modifient ensuite comme les autres opérations. Les mois manqués pendant que l'appli était fermée sont rattrapés à l'ouverture.
+- **Cash-flow** : une barre par mois sur six mois, au-dessus de zéro quand le mois a laissé de l'argent, en dessous sinon, avec le solde de fin de mois.
+- **Notifications** (APK Android) : un rappel quelques jours avant la date butoir d'un objectif pas encore atteint, à l'heure choisie dans les réglages.
+- **Glissement entre les onglets** : la page entre du côté de son onglet dans la barre du bas.
 
 ## 三 · Les thèmes
 
@@ -108,7 +113,8 @@ src/
   components/   feuille modale, camembert, formulaires, navigation
   screens/      un fichier par onglet
   store/        store zustand persistant, catégories par défaut, validation des imports
-  lib/          fonctions pures testées : montants, dates, statistiques, CSV
+  lib/          fonctions pures testées : montants, dates, statistiques, CSV, récurrences, rappels
+  native/       ce qui passe par Capacitor : les notifications
   styles/       tokens de couleur et styles
 ```
 
