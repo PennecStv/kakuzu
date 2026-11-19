@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayLabel, daysBetween, lastMonth, monthLabel, monthOf, periodLabel, shortDay, shiftMonth, shiftPeriod, unitOf, withUnit } from './dates';
+import { dateFieldLabel, dayLabel, daysBetween, fullDay, lastMonth, monthGrid, monthLabel, monthOf, periodLabel, shortDay, shiftMonth, shiftPeriod, unitOf, withUnit } from './dates';
 
 describe('periods', () => {
   it('reads the unit from the length', () => {
@@ -74,5 +74,31 @@ describe('days', () => {
   it('gives a short date, with the year only when it differs', () => {
     expect(shortDay('2026-12-31', '2026-11-18')).toBe('31 déc.');
     expect(shortDay('2027-01-15', '2026-11-18')).toBe('15 janv. 2027');
+  });
+});
+
+describe('calendar', () => {
+  it('lays a month out from Monday, in six weeks', () => {
+    // 1 November 2026 is a Sunday.
+    const grid = monthGrid('2026-11');
+    expect(grid).toHaveLength(42);
+    expect(grid.slice(0, 7)).toEqual([null, null, null, null, null, null, '2026-11-01']);
+    expect(grid[35]).toBe('2026-11-30');
+    expect(grid.slice(36).every((d) => d === null)).toBe(true);
+  });
+
+  it('starts on the first cell when the 1st is a Monday', () => {
+    const grid = monthGrid('2027-02');
+    expect(grid[0]).toBe('2027-02-01');
+    expect(grid.filter(Boolean)).toHaveLength(28);
+  });
+
+  it('names a day in full for a screen reader', () => {
+    expect(fullDay('2026-11-19')).toBe('jeudi 19 novembre 2026');
+  });
+
+  it('shows today by name in a date field', () => {
+    expect(dateFieldLabel('2026-11-19', '2026-11-19')).toBe("Aujourd'hui");
+    expect(dateFieldLabel('2026-11-18', '2026-11-19')).toBe('18 nov.');
   });
 });
