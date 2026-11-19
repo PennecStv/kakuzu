@@ -771,9 +771,11 @@
   margin: 0 0 12px;
 }
 
+/* Centered line by line, a drawing would come apart: its lines keep their own indents. */
 .empty__art {
   margin: 0 0 8px;
   color: var(--accent);
+  text-align: left;
   font-family: inherit;
   font-size: 14px;
   line-height: 1.3;

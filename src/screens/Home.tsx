@@ -1,4 +1,5 @@
 import { type CSSProperties, Fragment, type ReactNode, useMemo, useState } from 'react';
+import { THEMES } from '../ascii/themes';
 import { Donut } from '../components/Donut';
 import { FadeList } from '../components/FadeList';
 import { GoalList } from '../components/GoalList';
@@ -43,6 +44,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
   const categories = useStore((s) => s.categories);
   const currency = useStore((s) => s.settings.currency);
   const carryOver = useStore((s) => s.settings.carryOver);
+  const theme = useStore((s) => s.settings.theme);
   const [active, setActive] = useState<string | null>(null);
   const [kind, setKind] = useState<Kind>('expense');
   const unit = unitOf(period);
@@ -111,7 +113,7 @@ export function Home({ period, onPeriod, onOpen, onAdd, onSeeAll, onGoal }: Prop
         />
         {breakdown.length === 0 ? (
           <div className="empty">
-            <pre className="empty__art" aria-hidden="true">{'   ><(((°>\n ~  ~   ~  ~'}</pre>
+            <pre className="empty__art" aria-hidden="true">{THEMES[theme].still.join('\n')}</pre>
             <p>{SPLIT[kind].empty}</p>
             <button type="button" className="button button--primary" onClick={() => onAdd(kind)}>
               {SPLIT[kind].add}
