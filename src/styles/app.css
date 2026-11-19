@@ -484,6 +484,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.flow__planned {
+  margin: 12px 0 0;
+}
+
 /* ---------- donut and split list ---------- */
 
 .donut {
