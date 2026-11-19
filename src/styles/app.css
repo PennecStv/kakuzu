@@ -1037,6 +1037,11 @@
   border-top: 0;
 }
 
+/* The form's gap already spaces it. */
+.form .switch {
+  margin-top: 0;
+}
+
 .switch > span {
   flex: 1;
 }

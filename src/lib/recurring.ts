@@ -35,6 +35,12 @@ export function plannedEntries(recurring: Recurring[], period: Period): NewEntry
   return recurring.flatMap((r) => months.filter((m) => m >= r.next && `${m}-01`.startsWith(period)).map((m) => entryOf(r, m)));
 }
 
+/** The recurring entry an entry starts: the entry is its first month, the next one comes on the 1st of the month after. */
+export function recurringAfter(entry: Pick<NewEntry, 'kind' | 'amount' | 'categoryId' | 'note' | 'date'>): Omit<Recurring, 'id'> {
+  const { kind, amount, categoryId, note, date } = entry;
+  return { kind, amount, categoryId, note, next: shiftMonth(monthOf(date), 1) };
+}
+
 /** Income first, then expenses, the largest first in each. */
 export function sortRecurring(recurring: Recurring[]): Recurring[] {
   return [...recurring].sort((a, b) => (a.kind === b.kind ? b.amount - a.amount : a.kind === 'income' ? -1 : 1));

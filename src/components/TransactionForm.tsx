@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react';
-import { today } from '../lib/dates';
+import { monthLabel, monthOf, shiftMonth, today } from '../lib/dates';
 import { currencySymbol, parseAmount, toInput } from '../lib/money';
+import { recurringAfter } from '../lib/recurring';
 import { categoriesOf, useStore } from '../store/store';
 import type { Kind, Transaction } from '../store/types';
 import { CategoryPicker } from './CategoryPicker';
@@ -20,12 +21,15 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
   const currency = useStore((s) => s.settings.currency);
   const addTransaction = useStore((s) => s.addTransaction);
   const updateTransaction = useStore((s) => s.updateTransaction);
+  const addRecurring = useStore((s) => s.addRecurring);
+  const postRecurring = useStore((s) => s.postRecurring);
 
   const [kind, setKind] = useState<Kind>(editing?.kind ?? initialKind);
   const [amount, setAmount] = useState(editing ? toInput(editing.amount, currency) : '');
   const [categoryId, setCategoryId] = useState(editing?.categoryId ?? '');
   const [date, setDate] = useState(editing?.date ?? today());
   const [note, setNote] = useState(editing?.note ?? '');
+  const [monthly, setMonthly] = useState(false);
   const [error, setError] = useState('');
 
   const choices = categoriesOf(categories, kind);
@@ -44,7 +48,11 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
     }
     const entry = { kind, amount: minor, categoryId: selected.id, date: date || today(), note: note.trim() };
     if (editing) updateTransaction(editing.id, entry);
-    else addTransaction(entry);
+    else if (monthly) {
+      addTransaction({ ...entry, recurringId: addRecurring(recurringAfter(entry)) });
+      // An entry dated in a past month leaves the months since to fill in.
+      postRecurring(monthOf(today()));
+    } else addTransaction(entry);
     onSaved(entry);
   };
 
@@ -96,6 +104,16 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Facultatif" maxLength={80} />
         </label>
       </div>
+
+      {!editing && (
+        <label className="switch">
+          <span>
+            Chaque mois
+            <small>Puis le 1er de chaque mois, dès {monthLabel(shiftMonth(monthOf(date || today()), 1))}.</small>
+          </span>
+          <input type="checkbox" checked={monthly} onChange={(e) => setMonthly(e.target.checked)} />
+        </label>
+      )}
 
       <div className="form__actions">
         {editing && (

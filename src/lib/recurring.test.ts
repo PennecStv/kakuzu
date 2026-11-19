@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Recurring } from '../store/types';
-import { dueEntries, plannedEntries, sortRecurring } from './recurring';
+import { dueEntries, plannedEntries, recurringAfter, sortRecurring } from './recurring';
 
 const salary: Recurring = { id: 'r1', kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', next: '2026-11' };
 const rent: Recurring = { id: 'r2', kind: 'expense', amount: 65000, categoryId: 'home', note: 'Loyer', next: '2026-12' };
@@ -47,6 +47,13 @@ describe('plannedEntries', () => {
   it('puts them on the 1st only in a day period', () => {
     expect(plannedEntries([rent], '2026-12-01')).toHaveLength(1);
     expect(plannedEntries([rent], '2026-12-02')).toEqual([]);
+  });
+});
+
+describe('recurringAfter', () => {
+  it('comes back on the 1st of the month after the entry, across a new year', () => {
+    const entry = { kind: 'income' as const, amount: 50000, categoryId: 'salary', note: 'Salaire', date: '2026-12-19' };
+    expect(recurringAfter(entry)).toEqual({ kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', next: '2027-01' });
   });
 });
 

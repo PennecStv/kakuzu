@@ -29,7 +29,8 @@ interface Actions {
   addGoal: (g: Omit<Goal, 'id'>) => void;
   updateGoal: (id: string, patch: Partial<Omit<Goal, 'id'>>) => void;
   deleteGoal: (id: string) => void;
-  addRecurring: (r: Omit<Recurring, 'id'>) => void;
+  /** Returns its id, which the entries it adds carry. */
+  addRecurring: (r: Omit<Recurring, 'id'>) => string;
   /** Changes the months to come; the entries already added stay as they are. */
   updateRecurring: (id: string, patch: Partial<Omit<Recurring, 'id' | 'next'>>) => void;
   deleteRecurring: (id: string) => void;
@@ -95,7 +96,11 @@ export const useStore = create<State & Actions>()(
 
       deleteGoal: (id) => set((s) => ({ goals: s.goals.filter((g) => g.id !== id) })),
 
-      addRecurring: (r) => set((s) => ({ recurring: [...s.recurring, { ...r, id: crypto.randomUUID() }] })),
+      addRecurring: (r) => {
+        const id = crypto.randomUUID();
+        set((s) => ({ recurring: [...s.recurring, { ...r, id }] }));
+        return id;
+      },
 
       updateRecurring: (id, patch) =>
         set((s) => ({ recurring: s.recurring.map((r) => (r.id === id ? { ...r, ...patch } : r)) })),
