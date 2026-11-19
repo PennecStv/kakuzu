@@ -3,6 +3,7 @@ import { type FormEvent, useState } from 'react';
 import { currencySymbol, formatMoney, parseAmount, toInput } from '../lib/money';
 import { useStore } from '../store/store';
 import type { Goal } from '../store/types';
+import { DatePicker } from './DatePicker';
 
 interface Props {
   /** Absent for a new goal. */
@@ -123,9 +124,9 @@ export function GoalForm({ editing, onDone }: Props) {
         </label>
 
         <div className="field">
-          <label htmlFor="goal-deadline">Date butoir, facultative</label>
+          <span id="goal-deadline">Date butoir, facultative</span>
           <div className="row">
-            <input id="goal-deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+            <DatePicker labelledBy="goal-deadline" title="Date butoir" value={deadline} placeholder="Aucune" onChange={setDeadline} />
             {deadline && (
               <button type="button" className="icon-button" aria-label="Retirer la date butoir" onClick={() => setDeadline('')}>
                 <X aria-hidden="true" />

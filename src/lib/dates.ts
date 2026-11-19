@@ -97,6 +97,32 @@ export function shortDay(day: DayKey, now: DayKey = today()): string {
   return (day.slice(0, 4) === now.slice(0, 4) ? shortDayFormat : shortDayYearFormat).format(parseDay(day));
 }
 
+const fullDayFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+/** "jeudi 19 novembre 2026": a day of a calendar, as a screen reader names it. */
+export function fullDay(day: DayKey): string {
+  return fullDayFormat.format(parseDay(day));
+}
+
+/** What a date field shows: "Aujourd'hui", else the short day. */
+export function dateFieldLabel(day: DayKey, now: DayKey = today()): string {
+  return day === now ? "Aujourd'hui" : shortDay(day, now);
+}
+
+/**
+ * The days of a month week by week, Monday first, null before its 1st and after its last day.
+ * Always six weeks, so a calendar keeps its height from one month to the next.
+ */
+export function monthGrid(month: MonthKey): (DayKey | null)[] {
+  const first = parseDay(`${month}-01`);
+  const lead = (first.getDay() + 6) % 7;
+  const length = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  return Array.from({ length: 42 }, (_, i) => {
+    const day = i - lead + 1;
+    return day >= 1 && day <= length ? `${month}-${pad(day)}` : null;
+  });
+}
+
 export function dayLabel(day: DayKey, now: DayKey = today()): string {
   if (day === now) return "Aujourd'hui";
   const yesterday = parseDay(now);

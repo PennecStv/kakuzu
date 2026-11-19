@@ -1,10 +1,11 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useId, useState } from 'react';
 import { monthLabel, monthOf, shiftMonth, today } from '../lib/dates';
 import { currencySymbol, parseAmount, toInput } from '../lib/money';
 import { recurringAfter } from '../lib/recurring';
 import { categoriesOf, useStore } from '../store/store';
 import type { Kind, Transaction } from '../store/types';
 import { CategoryPicker } from './CategoryPicker';
+import { DatePicker } from './DatePicker';
 import { Segmented } from './Segmented';
 
 interface Props {
@@ -23,6 +24,7 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
   const updateTransaction = useStore((s) => s.updateTransaction);
   const addRecurring = useStore((s) => s.addRecurring);
   const postRecurring = useStore((s) => s.postRecurring);
+  const id = useId();
 
   const [kind, setKind] = useState<Kind>(editing?.kind ?? initialKind);
   const [amount, setAmount] = useState(editing ? toInput(editing.amount, currency) : '');
@@ -46,7 +48,7 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
       setError('Créez d’abord une catégorie.');
       return;
     }
-    const entry = { kind, amount: minor, categoryId: selected.id, date: date || today(), note: note.trim() };
+    const entry = { kind, amount: minor, categoryId: selected.id, date, note: note.trim() };
     if (editing) updateTransaction(editing.id, entry);
     else if (monthly) {
       addTransaction({ ...entry, recurringId: addRecurring(recurringAfter(entry)) });
@@ -95,10 +97,10 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
       <CategoryPicker categories={choices} selected={selected} onSelect={setCategoryId} />
 
       <div className="form__row">
-        <label className="field">
-          <span>Date</span>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        </label>
+        <div className="field">
+          <span id={`${id}-date`}>Date</span>
+          <DatePicker labelledBy={`${id}-date`} title="Date de l’opération" value={date} onChange={setDate} />
+        </div>
         <label className="field field--grow">
           <span>Note</span>
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Facultatif" maxLength={80} />
@@ -109,7 +111,7 @@ export function TransactionForm({ editing, kind: initialKind = 'expense', onSave
         <label className="switch">
           <span>
             Chaque mois
-            <small>Puis le 1er de chaque mois, dès {monthLabel(shiftMonth(monthOf(date || today()), 1))}.</small>
+            <small>Puis le 1er de chaque mois, dès {monthLabel(shiftMonth(monthOf(date), 1))}.</small>
           </span>
           <input type="checkbox" checked={monthly} onChange={(e) => setMonthly(e.target.checked)} />
         </label>

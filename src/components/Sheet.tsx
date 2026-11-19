@@ -16,7 +16,11 @@ export function Sheet({ open, title, onClose, children }: Props) {
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) {
+      dialog.showModal();
+      // React's autoFocus runs before the dialog shows, while nothing in it can take the focus.
+      dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+    }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
@@ -25,7 +29,11 @@ export function Sheet({ open, title, onClose, children }: Props) {
       ref={ref}
       className="sheet"
       aria-labelledby={titleId}
-      onClose={onClose}
+      onClose={(e) => {
+        // React passes close up its tree: a sheet opened from another one would close both.
+        e.stopPropagation();
+        onClose();
+      }}
       onClick={(e) => {
         // A click on the dialog box itself, outside the panel, is a click on the backdrop.
         if (e.target === ref.current) onClose();
