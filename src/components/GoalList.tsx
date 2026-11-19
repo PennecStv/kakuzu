@@ -13,14 +13,14 @@ interface Props {
 }
 
 export function GoalList({ goals, currency, onOpen }: Props) {
-  const { days, notify } = useStore((s) => s.settings.reminders);
+  const days = useStore((s) => s.settings.reminders.days);
   const now = today();
   return (
     <ul className="goals">
       {goals.map((g) => {
         const share = Math.min(1, g.saved / g.target);
         const done = share === 1;
-        const pressing = notify && urgency(g, now, days) !== 'none';
+        const pressing = urgency(g, now, days) !== 'none';
         return (
           <li key={g.id}>
             <button
@@ -30,6 +30,7 @@ export function GoalList({ goals, currency, onOpen }: Props) {
               style={{ '--fill': `${share * 100}%` } as CSSProperties}
               onClick={() => onOpen(g)}
             >
+              <span className="goal__shine" aria-hidden="true" />
               <span className="goal__name">
                 {done && <CircleCheck aria-hidden="true" />}
                 {pressing && <TriangleAlert className="goal__alert" aria-hidden="true" />}
