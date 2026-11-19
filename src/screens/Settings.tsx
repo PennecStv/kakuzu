@@ -155,8 +155,7 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
   const setReminders = (patch: Partial<typeof settings.reminders>) => setSettings({ reminders: { ...settings.reminders, ...patch } });
   const notifying = settings.reminders.notify;
   const toggleNotify = async (on: boolean) => {
-    // On the web the switch only turns the red flag on: there is no permission to ask.
-    if (on && canNotify && !(await allowNotifications())) {
+    if (on && !(await allowNotifications())) {
       notify('Notifications refusées. Autorisez-les dans les réglages du téléphone.');
       return;
     }
@@ -282,29 +281,35 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
         <h2 id="reminders-title" className="card__title">
           Objectifs
         </h2>
-        <label className={`switch${notifying ? ' is-on' : ''}`}>
-          <Bell className="switch__icon" aria-hidden="true" />
-          <span>
-            Notifications
-            <small>Pour les objectifs avec une date butoir.</small>
-          </span>
-          <input type="checkbox" checked={notifying} onChange={(e) => void toggleNotify(e.target.checked)} />
-        </label>
-        {/* Always rendered so it can unfold; inert keeps it out of reach while folded. */}
-        <div className={`reveal${notifying ? ' is-open' : ''}`} inert={!notifying}>
-          <div>
-            <p id="reminder-days" className="label">
-              Alerter avant la date butoir
-            </p>
-            <Dropdown
-              labelledBy="reminder-days"
-              value={String(settings.reminders.days)}
-              options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d > 1 ? `${d} jours avant` : 'La veille' }))}
-              onChange={(d) => setReminders({ days: Number(d) })}
-            />
-            {canNotify && (
-              <>
-                <p id="reminder-hour" className="label reminder-hour">
+        <p id="reminder-days" className="label">
+          Alerter avant la date butoir
+        </p>
+        <Dropdown
+          labelledBy="reminder-days"
+          value={String(settings.reminders.days)}
+          options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d > 1 ? `${d} jours avant` : 'La veille' }))}
+          onChange={(d) => setReminders({ days: Number(d) })}
+        />
+        <p className="hint">
+          {canNotify
+            ? 'L’objectif passe en rouge.'
+            : 'L’objectif passe en rouge. Le rappel sur le téléphone vient avec l’application Android.'}
+        </p>
+        {/* A web page cannot wake up once closed: only the app gets the switch. */}
+        {canNotify && (
+          <>
+            <label className={`switch${notifying ? ' is-on' : ''}`}>
+              <Bell className="switch__icon" aria-hidden="true" />
+              <span>
+                Notifications
+                <small>Un rappel sur le téléphone, en plus du rouge.</small>
+              </span>
+              <input type="checkbox" checked={notifying} onChange={(e) => void toggleNotify(e.target.checked)} />
+            </label>
+            {/* Always rendered so it can unfold; inert keeps it out of reach while folded. */}
+            <div className={`reveal${notifying ? ' is-open' : ''}`} inert={!notifying}>
+              <div>
+                <p id="reminder-hour" className="label">
                   Heure du rappel
                 </p>
                 <Dropdown
@@ -313,15 +318,10 @@ export function Settings({ notify }: { notify: (text: string) => void }) {
                   options={REMINDER_HOURS.map((h) => ({ value: String(h), label: `${h} h` }))}
                   onChange={(h) => setReminders({ hour: Number(h) })}
                 />
-              </>
-            )}
-            <p className="hint">
-              {canNotify
-                ? 'L’objectif passe en rouge et un rappel arrive sur le téléphone.'
-                : 'L’objectif passe en rouge. Le rappel sur le téléphone vient avec l’application Android.'}
-            </p>
-          </div>
-        </div>
+              </div>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="card" aria-labelledby="data-title">
