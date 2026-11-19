@@ -69,12 +69,12 @@ src/
 - The split by category is a donut (the owner asked for a "camembert"), expenses or income, with at most 6 segments: the tail folds into "Autres". 2 px surface gap between segments.
 - Income and expenses over six months is a line chart on one axis: income in the accent with a 10 % wash, expenses in ink, a readout above it for the month under the finger.
 - The donut never stands alone: it sits above a list giving each category's name, amount and share, so color is never the only key.
-- Cash-flow is a flow diagram read top to bottom (`components/FlowChart.tsx`): the period's total, then a ribbon per category as thick as its share, at most 6 like the donut. The first category's ribbon starts rightmost and turns first, so ribbons never cross. Each leaf names its category, amount and share. Ribbons draw in when the kind or the period changes, and a band of brighter color runs down each one (SMIL on the gradient, no glow: it clashes with the themes); with reduced motion or the Animations switch off they stand still.
+- Cash-flow is a flow diagram read top to bottom (`components/FlowChart.tsx`): the period's total, then a ribbon per category as thick as its share, at most 6 like the donut. The first category's ribbon starts rightmost and turns first, so ribbons never cross. Each leaf names its category, amount and share. Ribbons draw in when the kind or the period changes, and a band of brighter color runs down each one (SMIL on the gradient, no glow: it clashes with the themes); with reduced motion or the Animations switch off they stand still. A period still to come counts the recurring entries it will get (`plannedEntries`), with a line saying how many.
 
 ### Money over time
 
 - The balance carries over by default (`settings.carryOver`): a period opens with what every earlier entry left, deficits included.
-- A recurring entry adds a normal entry dated the 1st of each month, when the app opens or comes back to the foreground, months missed included. Its `next` month moves on as soon as it is added, so a month never gets it twice; editing it changes the months to come only.
+- A recurring entry adds a normal entry dated the 1st of each month, when the app opens or comes back to the foreground, months missed included. Its `next` month moves on as soon as it is added, so a month never gets it twice; editing it changes the months to come only. The Chaque mois switch of a new entry starts one: the entry is its first month, the next comes on the 1st of the month after.
 - The store is at version 3: a new persisted field gets a default in `src/store/migrations.ts` and a check in `src/store/backup.ts`.
 
 ### Git

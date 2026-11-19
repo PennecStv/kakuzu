@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Recurring } from '../store/types';
-import { dueEntries, sortRecurring } from './recurring';
+import { dueEntries, plannedEntries, recurringAfter, sortRecurring } from './recurring';
 
 const salary: Recurring = { id: 'r1', kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', next: '2026-11' };
 const rent: Recurring = { id: 'r2', kind: 'expense', amount: 65000, categoryId: 'home', note: 'Loyer', next: '2026-12' };
@@ -24,6 +24,36 @@ describe('dueEntries', () => {
   it('adds nothing twice', () => {
     const first = dueEntries([salary], '2026-11');
     expect(dueEntries(first.recurring, '2026-11').entries).toEqual([]);
+  });
+});
+
+describe('plannedEntries', () => {
+  it('shows a month to come with what it will get on its 1st', () => {
+    expect(plannedEntries([salary, rent], '2026-12')).toEqual([
+      { kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', date: '2026-12-01', recurringId: 'r1' },
+      { kind: 'expense', amount: 65000, categoryId: 'home', note: 'Loyer', date: '2026-12-01', recurringId: 'r2' },
+    ]);
+  });
+
+  it('leaves out the months already added', () => {
+    expect(plannedEntries([rent], '2026-11')).toEqual([]);
+    expect(plannedEntries([rent], '2026').map((e) => e.date)).toEqual(['2026-12-01']);
+  });
+
+  it('fills every month of a year to come', () => {
+    expect(plannedEntries([rent], '2027')).toHaveLength(12);
+  });
+
+  it('puts them on the 1st only in a day period', () => {
+    expect(plannedEntries([rent], '2026-12-01')).toHaveLength(1);
+    expect(plannedEntries([rent], '2026-12-02')).toEqual([]);
+  });
+});
+
+describe('recurringAfter', () => {
+  it('comes back on the 1st of the month after the entry, across a new year', () => {
+    const entry = { kind: 'income' as const, amount: 50000, categoryId: 'salary', note: 'Salaire', date: '2026-12-19' };
+    expect(recurringAfter(entry)).toEqual({ kind: 'income', amount: 50000, categoryId: 'salary', note: 'Salaire', next: '2027-01' });
   });
 });
 

@@ -62,15 +62,17 @@ export interface Slice {
   share: number;
 }
 
+type Sliced = Pick<Transaction, 'kind' | 'amount' | 'categoryId'>;
+
 /** Total per category id. */
-export function sumByCategory(transactions: Transaction[]): Map<string, number> {
+export function sumByCategory(transactions: Sliced[]): Map<string, number> {
   const sums = new Map<string, number>();
   for (const t of transactions) sums.set(t.categoryId, (sums.get(t.categoryId) ?? 0) + t.amount);
   return sums;
 }
 
 /** Total per category of one kind, largest first. */
-export function byCategory(transactions: Transaction[], kind: Kind): Slice[] {
+export function byCategory(transactions: Sliced[], kind: Kind): Slice[] {
   const sums = sumByCategory(transactions.filter((t) => t.kind === kind));
   const total = [...sums.values()].reduce((a, b) => a + b, 0);
   return [...sums]

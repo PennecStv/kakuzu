@@ -6,7 +6,7 @@ import { Segmented } from '../components/Segmented';
 import { TransactionRow } from '../components/TransactionRow';
 import { type Period, dayLabel, periodLabel } from '../lib/dates';
 import { formatMoney, formatSigned } from '../lib/money';
-import { sortRecurring } from '../lib/recurring';
+import { plannedEntries, sortRecurring } from '../lib/recurring';
 import { byCategory, foldSlices, groupByDay, inPeriod, matchesQuery, totals } from '../lib/stats';
 import { categoryColor, useStore } from '../store/store';
 import type { Goal, Kind, Recurring, Transaction } from '../store/types';
@@ -56,7 +56,10 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
 
   if (view === 'flow') {
     const fixed = totals(recurring);
-    const scoped = inPeriod(transactions, period);
+    // A month to come shows the recurring entries it will get, not only what is already in it.
+    const planned = plannedEntries(recurring, period);
+    const upcoming = planned.filter((e) => e.kind === flowKind).length;
+    const scoped = [...inPeriod(transactions, period), ...planned];
     const slices = foldSlices(byCategory(scoped, flowKind));
     const sum = totals(scoped);
     const money = (minor: number) => formatMoney(minor, currency);
@@ -92,6 +95,11 @@ export function History({ period, onPeriod, onOpen, onGoal, onRecurring }: Props
               labelOf={(s) => (s.id ? (byId.get(s.id)?.name ?? 'Sans catégorie') : 'Autres')}
               money={money}
             />
+          )}
+          {upcoming > 0 && (
+            <p className="hint flow__planned">
+              {upcoming > 1 ? `Dont ${upcoming} opérations récurrentes à venir.` : 'Dont 1 opération récurrente à venir.'}
+            </p>
           )}
         </section>
         <section className="card" aria-labelledby="recurring-title">

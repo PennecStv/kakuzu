@@ -484,6 +484,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.flow__planned {
+  margin: 12px 0 0;
+}
+
 /* ---------- donut and split list ---------- */
 
 .donut {
@@ -1031,6 +1035,11 @@
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
+}
+
+/* The form's gap already spaces it. */
+.form .switch {
+  margin-top: 0;
 }
 
 .switch > span {
