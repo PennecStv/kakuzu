@@ -52,8 +52,8 @@ Les applis de budget gratuites affichent une pub à chaque ouverture. Kakuzu fai
 - **Import de tableur** : un fichier .xlsx ou .csv avec les colonnes Date, Type, Catégorie, Montant, Note s'ajoute aux opérations. Le bouton « i » à côté de l'import affiche le format attendu.
 - **Objectifs** : « PC neuf », « Livret A 500 € » ; on verse ou retire à la main, sans toucher au solde. Une date butoir facultative fait passer l'objectif en rouge quand elle approche et qu'il n'est pas atteint, si les notifications sont activées.
 - **Report du solde** : ce qui reste à la fin d'un mois, même négatif, ouvre le mois suivant. Activé par défaut, il se coupe dans les réglages.
-- **Opérations récurrentes** : un salaire, un loyer, un abonnement s'ajoutent seuls le 1er de chaque mois, et se modifient ensuite comme les autres opérations. Les mois manqués pendant que l'appli était fermée sont rattrapés à l'ouverture.
-- **Cash-flow** : un diagramme de flux, du total de la période en haut vers chaque catégorie, un ruban aussi épais que sa part. Il bascule entre dépenses et revenus, les rubans se redessinent, une bande de couleur descend le long de chacun.
+- **Opérations récurrentes** : un salaire, un loyer, un abonnement s'ajoutent seuls le 1er de chaque mois, et se modifient ensuite comme les autres opérations. Le bouton « Chaque mois » d'une nouvelle opération en fait une, reprise le 1er du mois suivant. Les mois manqués pendant que l'appli était fermée sont rattrapés à l'ouverture.
+- **Cash-flow** : un diagramme de flux, du total de la période en haut vers chaque catégorie, un ruban aussi épais que sa part. Il bascule entre dépenses et revenus, les rubans se redessinent, une bande de couleur descend le long de chacun. Un mois à venir compte déjà les opérations récurrentes qu'il recevra.
 - **Notifications** : l'interrupteur à la cloche des réglages déplie le délai d'alerte. L'objectif pas encore atteint passe en rouge ce jour-là et, dans l'APK Android, un rappel arrive à l'heure choisie.
 - **Glissement entre les onglets** : la page entre du côté de son onglet dans la barre du bas.
 
