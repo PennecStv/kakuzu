@@ -30,6 +30,7 @@ export function GoalList({ goals, currency, onOpen }: Props) {
               style={{ '--fill': `${share * 100}%` } as CSSProperties}
               onClick={() => onOpen(g)}
             >
+              <span className="goal__shine" aria-hidden="true" />
               <span className="goal__name">
                 {done && <CircleCheck aria-hidden="true" />}
                 {pressing && <TriangleAlert className="goal__alert" aria-hidden="true" />}

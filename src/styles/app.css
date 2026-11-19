@@ -1724,8 +1724,14 @@
   list-style: none;
 }
 
-/* The theme's accent fills the row up to the share saved, deeper as it nears the target; capped at 28 % so --ink-2 keeps 4.5:1 on the palest accent. */
+/*
+ * The theme's accent fills the row up to the share saved, deeper as it nears the target. Capped at
+ * 20 % so that with the 8 % of the shine passing over it, --ink-2 keeps 4.5:1 on the palest accent.
+ */
 .goal {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
@@ -1739,7 +1745,7 @@
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--accent) 5%, transparent),
-    color-mix(in srgb, var(--accent) calc(12% + var(--fill) * 0.16), transparent) var(--fill),
+    color-mix(in srgb, var(--accent) calc(12% + var(--fill) * 0.08), transparent) var(--fill),
     transparent var(--fill)
   );
   text-align: left;
@@ -1789,6 +1795,35 @@
 
 .goal .budget__bar > span {
   width: var(--fill);
+}
+
+/* Behind the text, over the share saved only: the band runs across it from left to right. */
+.goal__shine {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: var(--fill);
+  overflow: hidden;
+}
+
+.goal__shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 8%, transparent), transparent);
+  transform: translateX(-100%);
+}
+
+@keyframes goal-shine {
+  from {
+    transform: translateX(-100%);
+  }
+  /* The band is 60 % of the share: past it at 100 / 0.6, then a rest before the next pass. */
+  55%,
+  to {
+    transform: translateX(calc(100% / 0.6));
+  }
 }
 
 @keyframes goal-fill {
@@ -1919,6 +1954,11 @@
 
 .app:not(.is-still) .goal__name svg:not(.goal__alert) {
   animation: goal-pop 0.5s 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+/* Starts once the row has filled in, then comes back for as long as it is on screen. */
+.app:not(.is-still) .goal__shine::before {
+  animation: goal-shine 3.2s 1.2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
